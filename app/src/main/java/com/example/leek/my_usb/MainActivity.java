@@ -1,7 +1,11 @@
 package com.example.leek.my_usb;
 
+import android.annotation.TargetApi;
+import android.graphics.Bitmap;
 import android.hardware.usb.UsbDevice;
+import android.os.Build;
 import android.os.Looper;
+import android.speech.tts.TextToSpeech;
 import android.support.annotation.Nullable;
 
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +23,7 @@ import com.jiangdg.usbcamera.utils.FileUtils;
 import com.serenegiant.usb.common.AbstractUVCCameraHandler;
 import com.serenegiant.usb.widget.CameraViewInterface;
 
+import java.util.Locale;
 
 
 public class MainActivity extends AppCompatActivity implements CameraViewInterface.Callback {
@@ -32,6 +37,40 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
 
     private boolean isRequest;
     private boolean isPreview;
+
+    private Thread tts_thread;
+
+    private boolean tts_thread_started = false;
+    private boolean feed_bbox_thread_statred = false;
+    private boolean program_running = true;
+
+    final int READY_TO_FEED = 0;
+    final int SERVICE_CALL_DONE = 1;
+    final int TTS_DONE = 2;
+    final int WEAK_STATE = 0;
+    final int STRONG_STATE = 1;
+    final int NORMAL_STATE = 2;
+    final int READY_STATE = 3;
+
+    static {
+        System.loadLibrary("native-lib");
+    }
+
+    private Thread feed_bbox_thread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            while(program_running == true){
+                Log.i("thread1","message_done");
+                if(feed_bbox_thread_statred == true)
+                    ObstacleManager.feed_image(bbox);
+            }
+
+        }
+    });
+
+    private TextToSpeech tts_object;
+    public static String weak_sentence  = "계단이 앞쪽에 있습니다";
+    public static String strong_sentence = "계단이 진행방향 바로 앞쪽에 있습니다";
 
     private UVCCameraHelper.OnMyDevConnectListener listener = new UVCCameraHelper.OnMyDevConnectListener() {
 
@@ -76,7 +115,9 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         public void onDisConnectDev(UsbDevice device) {
             showShortMsg("disconnecting");
         }
+
     };
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -105,7 +146,47 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
                 Log.i("onPreviewResult","on");
             }
         });
+
+        tts_thread = new Thread(new Runnable() {
+            int case_;
+            @Override
+            public void run() {
+                Log.i("thread2","I'm in tts_thread");
+                case_ = ObstacleManager.get_warning();
+                switch (case_){
+                    case WEAK_STATE:
+                        try {
+                            ttsGreater21(weak_sentence);
+                            tts_thread.join();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case STRONG_STATE:
+                        try {
+                            ttsGreater21(strong_sentence);
+                            tts_thread.join();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                mMainHandler.sendEmptyMessage(TTS_DONE);
+            }
+        });
+
+        tts_object = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR) {
+                    tts_object.setLanguage(Locale.KOREAN);
+                }
+            }
+        });
     }
+
 
     @Override
     protected void onStart() {
@@ -154,7 +235,8 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
 
     @Override
     public void onSurfaceChanged(CameraViewInterface view, Surface surface, int width, int height) {
-
+        Log.i("Surface", "capture~~~ ");
+        //Bitmap bmp = view.captureStillImage(0,100);
     }
 
     @Override
@@ -163,5 +245,11 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
             mCameraHelper.stopPreview();
             isPreview = false;
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void ttsGreater21(String text) {
+        String utteranceId=this.hashCode() + "";
+        tts_object.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId);
     }
 }
