@@ -1,10 +1,14 @@
 package com.example.leek.my_usb;
 
 import android.annotation.TargetApi;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.graphics.Bitmap;
 import android.hardware.usb.UsbDevice;
 import android.os.Build;
+import android.os.Environment;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.Nullable;
 
@@ -17,12 +21,18 @@ import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.Toast;
 import com.jiangdg.usbcamera.UVCCameraHelper;
 import com.jiangdg.usbcamera.utils.FileUtils;
 import com.serenegiant.usb.common.AbstractUVCCameraHandler;
 import com.serenegiant.usb.widget.CameraViewInterface;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Locale;
 
 
@@ -52,6 +62,14 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
     final int NORMAL_STATE = 2;
     final int READY_STATE = 3;
 
+    final int cam_width = 1920;
+    final int cam_height = 1080;
+
+    private int[] rgb = new int[cam_width * cam_height];
+
+    //temp
+
+
     static {
         System.loadLibrary("native-lib");
     }
@@ -61,8 +79,9 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         public void run() {
             while(program_running == true){
                 Log.i("thread1","message_done");
-                if(feed_bbox_thread_statred == true)
-                    ObstacleManager.feed_image(bbox);
+                if(feed_bbox_thread_statred == true) {
+                    //ObstacleManager.feed_image(bbox);
+                }
             }
 
         }
@@ -143,7 +162,10 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         mCameraHelper.setOnPreviewFrameListener(new AbstractUVCCameraHandler.OnPreViewResultListener() {
             @Override
             public void onPreviewResult(byte[] nv21Yuv) {
-                Log.i("onPreviewResult","on");
+                decodeYUV420SP(rgb,nv21Yuv,cam_width,cam_height);
+                Bitmap bmp = Bitmap.createBitmap(rgb,cam_width,cam_height,Bitmap.Config.ARGB_8888);
+                //temp
+                saveToInternalStorage(bmp);
             }
         });
 
@@ -173,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
                     default:
                         break;
                 }
-                mMainHandler.sendEmptyMessage(TTS_DONE);
+                //mMainHandler.sendEmptyMessage(TTS_DONE);
             }
         });
 
@@ -252,4 +274,55 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         String utteranceId=this.hashCode() + "";
         tts_object.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId);
     }
+
+    public static void decodeYUV420SP(int[] rgb, byte[] yuv420sp, int width, int height) {
+
+        final int frameSize = width * height;
+
+        for (int j = 0, yp = 0; j < height; j++) {       int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
+            for (int i = 0; i < width; i++, yp++) {
+                int y = (0xff & ((int) yuv420sp[yp])) - 16;
+                if (y < 0)
+                    y = 0;
+                if ((i & 1) == 0) {
+                    v = (0xff & yuv420sp[uvp++]) - 128;
+                    u = (0xff & yuv420sp[uvp++]) - 128;
+                }
+
+                int y1192 = 1192 * y;
+                int r = (y1192 + 1634 * v);
+                int g = (y1192 - 833 * v - 400 * u);
+                int b = (y1192 + 2066 * u);
+
+                if (r < 0)                  r = 0;               else if (r > 262143)
+                    r = 262143;
+                if (g < 0)                  g = 0;               else if (g > 262143)
+                    g = 262143;
+                if (b < 0)                  b = 0;               else if (b > 262143)
+                    b = 262143;
+
+                rgb[yp] = 0xff000000 | ((r << 6) & 0xff0000) | ((g >> 2) & 0xff00) | ((b >> 10) & 0xff);
+            }
+        }
+    }
+
+    private void saveToInternalStorage(Bitmap bitmapImage){
+        String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+        File myDir = new File(root + "/saved_images");
+        myDir.mkdirs();
+
+        String fname = "Image.jpg";
+        File file = new File (myDir, fname);
+        if (file.exists ()) file.delete ();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
