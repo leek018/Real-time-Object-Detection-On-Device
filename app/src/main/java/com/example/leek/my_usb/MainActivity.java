@@ -1,55 +1,39 @@
 package com.example.leek.my_usb;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
-import android.content.ContextWrapper;
-import android.graphics.Bitmap;
+import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.hardware.usb.UsbDevice;
 import android.os.Build;
 import android.os.Environment;
-import android.os.Looper;
-import android.provider.MediaStore;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.Nullable;
-
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-
 import android.util.Log;
-import android.view.LayoutInflater;
-
 import android.view.Surface;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.Toast;
 import com.jiangdg.usbcamera.UVCCameraHelper;
 import com.jiangdg.usbcamera.utils.FileUtils;
 import com.serenegiant.usb.common.AbstractUVCCameraHandler;
 import com.serenegiant.usb.widget.CameraViewInterface;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Locale;
 
 
 public class MainActivity extends AppCompatActivity implements CameraViewInterface.Callback {
     private static final String TAG = "Debug";
 
-    public View mTextureView;
-
-    private UVCCameraHelper mCameraHelper;
-    private CameraViewInterface mUVCCameraView;
-
-
-    private boolean isRequest;
-    private boolean isPreview;
-
+    /*
     private Thread tts_thread;
-
     private boolean tts_thread_started = false;
     private boolean feed_bbox_thread_statred = false;
     private boolean program_running = true;
@@ -62,34 +46,36 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
     final int NORMAL_STATE = 2;
     final int READY_STATE = 3;
 
-    final int cam_width = 1920;
-    final int cam_height = 1080;
-
-    private int[] rgb = new int[cam_width * cam_height];
-
-    //temp
-
-
-    static {
-        System.loadLibrary("native-lib");
-    }
-
-    private Thread feed_bbox_thread = new Thread(new Runnable() {
-        @Override
-        public void run() {
-            while(program_running == true){
-                Log.i("thread1","message_done");
-                if(feed_bbox_thread_statred == true) {
-                    //ObstacleManager.feed_image(bbox);
-                }
-            }
-
-        }
-    });
-
     private TextToSpeech tts_object;
     public static String weak_sentence  = "계단이 앞쪽에 있습니다";
     public static String strong_sentence = "계단이 진행방향 바로 앞쪽에 있습니다";
+    */
+
+    final int cam_width = 1920;
+    final int cam_height = 1080;
+
+    public View mTextureView;
+    private UVCCameraHelper mCameraHelper;
+    private CameraViewInterface mUVCCameraView;
+    private boolean isRequest;
+    private boolean isPreview;
+    private static final int PERMISSION_REQUEST_CODE = 1;
+
+    String model_name = "mssd_300";
+    String model_path ;
+    String proto_path = model_path = "/sdcard/saved_images/";
+    String device_type = "acl_opencl";
+
+    //temp
+    int i = 0;
+
+    static {
+        System.loadLibrary("detect-lib");
+    }
+
+
+
+
 
     private UVCCameraHelper.OnMyDevConnectListener listener = new UVCCameraHelper.OnMyDevConnectListener() {
 
@@ -149,6 +135,21 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
 
         setContentView(R.layout.activity_main);
 
+
+        if (Build.VERSION.SDK_INT >= 23)
+        {
+            if (!checkPermission(MainActivity.this))
+            {
+                    requestPermission(MainActivity.this); // Code for permission
+            }
+        }
+
+
+
+        boolean create_result = DetectManager.get_graph_space(model_name,model_path+"MobileNetSSD_deploy.caffemodel",proto_path+"MobileNetSSD_deploy.prototxt",device_type);
+        if(!create_result )
+            showShortMsg("create graph failed");
+
         // step.1 initialize UVCCameraHelper
         mUVCCameraView = (CameraViewInterface) mTextureView;
         mUVCCameraView = (CameraViewInterface) findViewById(R.id.camera_view);
@@ -159,54 +160,55 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         mCameraHelper.updateResolution(1920, 1080);
 
 
+
         mCameraHelper.setOnPreviewFrameListener(new AbstractUVCCameraHandler.OnPreViewResultListener() {
             @Override
             public void onPreviewResult(byte[] nv21Yuv) {
-                decodeYUV420SP(rgb,nv21Yuv,cam_width,cam_height);
-                Bitmap bmp = Bitmap.createBitmap(rgb,cam_width,cam_height,Bitmap.Config.ARGB_8888);
-                //temp
-                saveToInternalStorage(bmp);
+                int result = DetectManager.detect(nv21Yuv,1920,1080);
+                Log.i("dectection_result",""+result);
+                DetectManager.delete_out_data();
+
             }
         });
 
-        tts_thread = new Thread(new Runnable() {
-            int case_;
-            @Override
-            public void run() {
-                Log.i("thread2","I'm in tts_thread");
-                case_ = ObstacleManager.get_warning();
-                switch (case_){
-                    case WEAK_STATE:
-                        try {
-                            ttsGreater21(weak_sentence);
-                            tts_thread.join();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    case STRONG_STATE:
-                        try {
-                            ttsGreater21(strong_sentence);
-                            tts_thread.join();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                //mMainHandler.sendEmptyMessage(TTS_DONE);
-            }
-        });
-
-        tts_object = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if(status != TextToSpeech.ERROR) {
-                    tts_object.setLanguage(Locale.KOREAN);
-                }
-            }
-        });
+//        tts_thread = new Thread(new Runnable() {
+//            int case_;
+//            @Override
+//            public void run() {
+//                Log.i("thread2","I'm in tts_thread");
+//                case_ = ObstacleManager.get_warning();
+//                switch (case_){
+//                    case WEAK_STATE:
+//                        try {
+//                            ttsGreater21(weak_sentence);
+//                            tts_thread.join();
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+//                        break;
+//                    case STRONG_STATE:
+//                        try {
+//                            ttsGreater21(strong_sentence);
+//                            tts_thread.join();
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+//                        break;
+//                    default:
+//                        break;
+//                }
+//                //mMainHandler.sendEmptyMessage(TTS_DONE);
+//            }
+//        });
+//
+//        tts_object = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+//            @Override
+//            public void onInit(int status) {
+//                if(status != TextToSpeech.ERROR) {
+//                    tts_object.setLanguage(Locale.KOREAN);
+//                }
+//            }
+//        });
     }
 
 
@@ -228,6 +230,8 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         if (mCameraHelper != null) {
             mCameraHelper.unregisterUSB();
         }
+        DetectManager.delete_out_data();
+
     }
 
 
@@ -240,6 +244,8 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         if (mCameraHelper != null) {
             mCameraHelper.release();
         }
+        DetectManager.delete_out_data();
+        DetectManager.delete_graph_space();
     }
 
     private void showShortMsg(String msg) {
@@ -268,60 +274,40 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
             isPreview = false;
         }
     }
-
+    /*
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void ttsGreater21(String text) {
         String utteranceId=this.hashCode() + "";
         tts_object.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId);
     }
+    */
 
-    public static void decodeYUV420SP(int[] rgb, byte[] yuv420sp, int width, int height) {
 
-        final int frameSize = width * height;
-
-        for (int j = 0, yp = 0; j < height; j++) {       int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
-            for (int i = 0; i < width; i++, yp++) {
-                int y = (0xff & ((int) yuv420sp[yp])) - 16;
-                if (y < 0)
-                    y = 0;
-                if ((i & 1) == 0) {
-                    v = (0xff & yuv420sp[uvp++]) - 128;
-                    u = (0xff & yuv420sp[uvp++]) - 128;
-                }
-
-                int y1192 = 1192 * y;
-                int r = (y1192 + 1634 * v);
-                int g = (y1192 - 833 * v - 400 * u);
-                int b = (y1192 + 2066 * u);
-
-                if (r < 0)                  r = 0;               else if (r > 262143)
-                    r = 262143;
-                if (g < 0)                  g = 0;               else if (g > 262143)
-                    g = 262143;
-                if (b < 0)                  b = 0;               else if (b > 262143)
-                    b = 262143;
-
-                rgb[yp] = 0xff000000 | ((r << 6) & 0xff0000) | ((g >> 2) & 0xff00) | ((b >> 10) & 0xff);
-            }
+    private boolean checkPermission(Context context) {//
+        int result = ContextCompat.checkSelfPermission(context, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (result == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        } else {
+            return false;
         }
     }
+    private void requestPermission(Activity activity) {
 
-    private void saveToInternalStorage(Bitmap bitmapImage){
-        String root = Environment.getExternalStorageDirectory().getAbsolutePath();
-        File myDir = new File(root + "/saved_images");
-        myDir.mkdirs();
-
-        String fname = "Image.jpg";
-        File file = new File (myDir, fname);
-        if (file.exists ()) file.delete ();
-        try {
-            FileOutputStream out = new FileOutputStream(file);
-            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 90, out);
-            out.flush();
-            out.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (ActivityCompat.shouldShowRequestPermissionRationale(activity, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            Toast.makeText(activity, "Write External Storage permission allows us to do store images. Please allow this permission in App Settings.", Toast.LENGTH_LONG).show();
+        } else {
+            ActivityCompat.requestPermissions(activity, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
+        }
+    }
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.e("value", "Permission Granted, Now you can use local drive .");
+                } else {
+                    Log.e("value", "Permission Denied, You cannot use local drive .");
+                }
+                break;
         }
     }
 

@@ -4,21 +4,26 @@
 # Sets the minimum version of CMake required to build the native library.
 
 cmake_minimum_required(VERSION 3.4.1)
+set(PROJECT_PATH C:/Users/LG-PC/my_usb_project_zero)
+set(CMAKE_VERBOSE_MAKEFILE on)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+set(INCLUDE_PATH ${PROJECT_PATH}/app/src/main/include)
 
+include_directories(${INCLUDE_PATH})
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 
-add_library( # Sets the name of the library.
-             native-lib
 
-             # Sets the library as a shared library.
-             SHARED
 
-             # Provides a relative path to your source file(s).
-             src/main/cpp/native-lib.cpp )
 
+add_library(mssd-lib SHARED IMPORTED)
+set_target_properties(mssd-lib PROPERTIES IMPORTED_LOCATION ${PROJECT_PATH}/app/src/main/JniLibs/arm64-v8a/libMSSD.so)
+
+
+
+add_library(detect-lib SHARED src/main/jni/detect.cpp)
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
 # default, you only need to specify the name of the public NDK library
@@ -37,8 +42,9 @@ find_library( # Sets the name of the path variable.
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-                       native-lib
+                        detect-lib
+                        mssd-lib
 
                        # Links the target library to the log library
                        # included in the NDK.
-                       ${log-lib} )
+                        ${log-lib})
