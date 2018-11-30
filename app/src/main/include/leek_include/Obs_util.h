@@ -2,38 +2,52 @@
 // Created by LG-PC on 2018-11-21.
 //
 
-#ifndef MY_USB_PROJECT_ZERO_OBS_UTIL_H
-#define MY_USB_PROJECT_ZERO_OBS_UTIL_H
+//box information part
+#define SCORE 1
+#define x0 2
+#define y0 3
+#define x1 4
+#define y1 5
 
-#define distance_threshold 0.8
+// Threshold about state which is needed to be modified
+#define bottom_threshold 0.8
+#define middle_threshold 0.5
+
+// gauge information ,which is needed to be modified nothing but gauge_init_val
 #define gauge_length 10
 #define gauge_init_val 0
-#define nothing_or_detect_small -1
+#define weak_alarm_threshold 5
+#define strong_alarm_threshold 5
+
+#define nothing_or_detect_low_probability -1
 #define True 1
 #define False 0
-#define weak_alarm_point 5
-#define strong_alarm_point 5
+
+
 #define weak_case 0
 #define strong_case 1
 
-#define Weak_state 0
-#define Strong_state 1
-#define Normal_state 2
-#define Ready_state 3
+#define Zero_state 0
+#define Weak_center_state 1
+#define Weak_left_state 2
+#define Weak_right_state 3
+#define Strong_state 3
 
 
 
 struct Obs_gauge {
     int current_weak_gauge, current_strong_gauge;
-    int before_weak_gauge,before_strong_gauge;
-    Obs_gauge() : current_weak_gauge(gauge_init_val), current_strong_gauge(gauge_init_val),
-                  before_weak_gauge(gauge_init_val),before_strong_gauge(gauge_init_val) {}
-};
-struct box {
-    float x, y, w, h;
+    //int before_weak_gauge,before_strong_gauge;
+    Obs_gauge() : current_weak_gauge(gauge_init_val), current_strong_gauge(gauge_init_val) {}
+                  //before_weak_gauge(gauge_init_val),before_strong_gauge(gauge_init_val)
 };
 
-int Isnear(box *bbox);
-void trace_gauge(/*Obs_gauge *tracked_gauge*/);
-void gauge_control(box* src);
-#endif //MY_USB_PROJECT_ZERO_OBS_UTIL_H
+
+
+
+
+
+int Isnear(float *raw_data, float threshold_you_want);
+void trace_gauge(Obs_gauge *tracked_gauge);
+void gauge_control(float *raw_data,Obs_gauge *stair_gauge,float threshold_you_want);
+

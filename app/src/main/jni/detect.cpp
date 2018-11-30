@@ -5,6 +5,7 @@
 #include <jni.h>
 #include <android/log.h>
 #include "../include/leek_include/mssd.h"
+#include "../include/leek_include/Obs_util.h"
 #include <../include/opencv2/opencv.hpp>
 
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,"detect",__VA_ARGS__)
@@ -65,7 +66,7 @@ Java_com_example_leek_my_1usb_DetectManager_detect(JNIEnv *env, jclass type, jby
     }
 
     int res = detect(global_input,&out_data,global_graph,global_tensor_input,&global_tensor_out,&num_detected_obj,IMG_SIZE);
-    post_process_ssd("/sdcard/saved_images/leek.jpg",threshold,out_data,num_detected_obj,"/sdcard/saved_images/leek_processed.jpg");
+    //post_process_ssd("/sdcard/saved_images/leek.jpg",threshold,out_data,num_detected_obj,"/sdcard/saved_images/leek_processed.jpg");
     env->ReleaseByteArrayElements(nv21Yuv_, i, 0);
 
     return 0;
