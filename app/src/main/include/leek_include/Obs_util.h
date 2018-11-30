@@ -23,28 +23,29 @@
 #define True 1
 #define False 0
 
-
-#define weak_case 0
+#define weak_center_case 0
 #define strong_case 1
+#define weak_left_case 2
+#define weak_right_case 3
 
 #define Zero_state 0
 #define Weak_center_state 1
 #define Weak_left_state 2
 #define Weak_right_state 3
-#define Strong_state 3
-
-
+#define Strong_state 4
 
 struct Obs_gauge {
-    int current_weak_gauge, current_strong_gauge;
+    int current_weak_center_gauge;
+    int current_weak_left_gauge;
+    int current_weak_right_gauge;
+    int current_strong_gauge;
+    //int current_weak_gauge, current_strong_gauge;
     //int before_weak_gauge,before_strong_gauge;
-    Obs_gauge() : current_weak_gauge(gauge_init_val), current_strong_gauge(gauge_init_val) {}
-                  //before_weak_gauge(gauge_init_val),before_strong_gauge(gauge_init_val)
+    Obs_gauge() : current_weak_center_gauge(gauge_init_val), current_weak_left_gauge(gauge_init_val),
+                  current_weak_right_gauge(gauge_init_val), current_strong_gauge(gauge_init_val) {}
+    //Obs_gauge() : current_weak_gauge(gauge_init_val), current_strong_gauge(gauge_init_val) {}
+    //before_weak_gauge(gauge_init_val),before_strong_gauge(gauge_init_val)
 };
-
-
-
-
 
 
 int Isnear(float *raw_data, float threshold_you_want);
