@@ -12,6 +12,7 @@
 // Threshold about state which is needed to be modified
 #define bottom_threshold 0.8
 #define middle_threshold 0.5
+#define middle_add_area 0.1
 
 // gauge information ,which is needed to be modified nothing but gauge_init_val
 #define gauge_length 10
