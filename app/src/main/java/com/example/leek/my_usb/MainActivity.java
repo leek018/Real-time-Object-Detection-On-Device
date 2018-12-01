@@ -5,11 +5,17 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.hardware.usb.UsbDevice;
 import android.os.Build;
 import android.os.Environment;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +23,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 import com.jiangdg.usbcamera.UVCCameraHelper;
 import com.jiangdg.usbcamera.utils.FileUtils;
@@ -60,6 +67,14 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
     private boolean isRequest;
     private boolean isPreview;
     private static final int PERMISSION_REQUEST_CODE = 1;
+
+    private ImageView mImageView;
+    private static Bitmap bitmap;
+    private static Paint  paint;
+    private static Canvas canvas;
+    private int p_width = 1920;
+    private int p_height = 1000;
+
 
     String model_name = "mssd_300";
     String model_path ;
@@ -150,6 +165,18 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         if(!create_result )
             showShortMsg("create graph failed");
 
+        // To draw and show BBox
+        mImageView = findViewById(R.id.image_view);
+        bitmap = Bitmap.createBitmap(p_width, p_height, Bitmap.Config.ARGB_8888);
+        mImageView.setImageBitmap(bitmap);
+
+        canvas = new Canvas(bitmap);
+        paint = new Paint();
+        paint.setColor(Color.RED);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(3);
+
+
         // step.1 initialize UVCCameraHelper
         mUVCCameraView = (CameraViewInterface) mTextureView;
         mUVCCameraView = (CameraViewInterface) findViewById(R.id.camera_view);
@@ -162,12 +189,22 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
 
 
         mCameraHelper.setOnPreviewFrameListener(new AbstractUVCCameraHandler.OnPreViewResultListener() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onPreviewResult(byte[] nv21Yuv) {
+
+                // Detect BBox
                 int result = DetectManager.detect(nv21Yuv,1920,1080);
                 Log.i("dectection_result",""+result);
-                DetectManager.delete_out_data();
 
+                int x1 = 100, y1 = 100, x2 = 400, y2 = 400;
+
+                // Draw BBox
+                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                canvas.drawRect(x1, y1, x2, y2, paint);
+
+                // Release
+                DetectManager.delete_out_data();
             }
         });
 
