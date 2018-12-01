@@ -202,14 +202,25 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
             public void onPreviewResult(byte[] nv21Yuv) {
 
                 // Detect BBox
-                int result = DetectManager.detect(nv21Yuv,1920,1080);
-                Log.i("dectection_result",""+result);
+                boolean result = DetectManager.detect(nv21Yuv,1920,1080);
+                if( result == false)
+                    Log.i("error"," in obstacle");
+                float[] dum = new float[1000];
+                 DetectManager.get_out_data(dum);
+                Log.i("num",""+dum[0]);
 
                 int x1 = 100, y1 = 100, x2 = 400, y2 = 400;
 
                 // Draw BBox
                 canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-                canvas.drawRect(x1, y1, x2, y2, paint);
+				for (int i=0; i<(int)dum[0]; i++) {
+					// class, state, x1, y1, x2, y2
+					x1 = dum[1 + i*6 + 2];
+					y1 = dum[1 + i*6 + 3];
+					x2 = dum[1 + i*6 + 4];
+					y2 = dum[1 + i*6 + 5];
+					canvas.drawRect(x1, y1, x2, y2, paint);
+				}
 
                 // Release
                 DetectManager.delete_out_data();
