@@ -18,14 +18,8 @@ int Isnear(float *raw_data, float threshold_you_want ) {
     float middle_right = middle_threshold + middle_add_area;
     float middle_left = middle_threshold - middle_add_area;
 
-    //obj_right(left) - middle_right(left) to figure out which area they are located
-    int right_right = obj_right > middle_right ? True : False;
-    int right_left = obj_right > middle_left ? True : False;
-    int left_right = obj_left > middle_right ? True : False;
-    int left_left = obj_left > middle_left ? True : False;
-
-    int right_area = right_right && right_left && left_right && left_left ? True : False;
-    int left_area = !right_right && !right_left && !left_right && !left_left ? True : False;
+    int right_area = obj_left > middle_right ? True : False;
+    int left_area = obj_right < middle_left ? True : False;
     //int across_center = (obj_right - middle_threshold) * (obj_left - middle_threshold) > 0 ? False : True;
     int far_away =  obj_bottom < bottom_threshold ? True : False;
 
