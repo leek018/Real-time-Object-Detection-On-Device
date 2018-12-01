@@ -4,10 +4,10 @@
 
 //box information part
 #define SCORE 1
-#define x0 2
-#define y0 3
-#define x1 4
-#define y1 5
+#define X0 2
+#define Y0 3
+#define X1 4
+#define Y1 5
 
 // Threshold about state which is needed to be modified
 #define bottom_threshold 0.8

@@ -10,9 +10,9 @@
 int Isnear(float *raw_data, float threshold_you_want ) {
     if(raw_data[SCORE] < threshold_you_want )
         return nothing_or_detect_low_probability;
-    float obj_right = raw_data[x1];
-    float obj_left = raw_data[x0];
-    float obj_bottom = raw_data[y1];
+    float obj_right = raw_data[X1];
+    float obj_left = raw_data[X0];
+    float obj_bottom = raw_data[Y1];
     int across_center = (obj_right - middle_threshold) * (obj_left - middle_threshold) > 0 ? False : True;
     int far_away =  obj_bottom < bottom_threshold ? True : False;
     if ((across_center == True && far_away == True) || (across_center == False && far_away == False))
