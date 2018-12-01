@@ -10,9 +10,11 @@
 int Isnear(float *raw_data, float threshold_you_want ) {
     if(raw_data[SCORE] < threshold_you_want )
         return nothing_or_detect_low_probability;
+
     float obj_right = raw_data[X1];
     float obj_left = raw_data[Y0];
     float obj_bottom = raw_data[Y1];
+
 
     //add middle area
     float middle_right = middle_threshold + middle_add_area;
@@ -57,6 +59,9 @@ void gauge_control(float *raw_data,Obs_gauge *stair_gauge,float threshold_you_wa
     int current_weak_center_temp = stair_gauge->current_weak_center_gauge;
     int current_weak_left_temp = stair_gauge->current_weak_left_gauge;
     int current_weak_right_temp = stair_gauge->current_weak_right_gauge;
+
+    //int current_weak_temp = stair_gauge->current_weak_gauge;
+
     int current_strong_temp = stair_gauge->current_strong_gauge;
 
     case_ = Isnear(raw_data,threshold_you_want);
@@ -74,6 +79,7 @@ void gauge_control(float *raw_data,Obs_gauge *stair_gauge,float threshold_you_wa
         stair_gauge->current_weak_center_gauge = (current_weak_center_temp > gauge_length) ? --current_weak_center_temp : gauge_init_val;
         stair_gauge->current_weak_left_gauge = (current_weak_left_temp > gauge_init_val) ? --current_weak_left_temp : gauge_init_val;
         stair_gauge->current_weak_right_gauge = (current_weak_right_temp < gauge_init_val) ? ++current_weak_right_temp : gauge_length;
+
         stair_gauge->current_strong_gauge = (current_strong_temp > gauge_init_val) ? --current_strong_temp : gauge_init_val;
     }else if (case_ == strong_case) {
         stair_gauge->current_weak_center_gauge = (current_weak_center_temp > gauge_length) ? --current_weak_center_temp : gauge_init_val;
@@ -86,7 +92,6 @@ void gauge_control(float *raw_data,Obs_gauge *stair_gauge,float threshold_you_wa
         stair_gauge->current_weak_right_gauge = (current_weak_right_temp > gauge_init_val) ? --current_weak_right_temp : gauge_init_val;
         stair_gauge->current_strong_gauge = (current_strong_temp > gauge_init_val) ? --current_strong_temp : gauge_init_val;
     }
-
     //trace_gauge(stair_gauge);
 }
 
