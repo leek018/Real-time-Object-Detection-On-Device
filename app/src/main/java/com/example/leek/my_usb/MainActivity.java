@@ -23,6 +23,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 import com.jiangdg.usbcamera.UVCCameraHelper;
@@ -149,6 +151,9 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
 //                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.activity_main);
+//        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 
         if (Build.VERSION.SDK_INT >= 23)
