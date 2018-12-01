@@ -164,8 +164,12 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         mCameraHelper.setOnPreviewFrameListener(new AbstractUVCCameraHandler.OnPreViewResultListener() {
             @Override
             public void onPreviewResult(byte[] nv21Yuv) {
-                int result = DetectManager.detect(nv21Yuv,1920,1080);
-                Log.i("dectection_result",""+result);
+                boolean result = DetectManager.detect(nv21Yuv,1920,1080);
+                if( result == false)
+                    Log.i("error"," in obstacle");
+                float[] dum = new float[1000];
+                 DetectManager.get_out_data(dum);
+                Log.i("num",""+dum[0]);
                 DetectManager.delete_out_data();
 
             }

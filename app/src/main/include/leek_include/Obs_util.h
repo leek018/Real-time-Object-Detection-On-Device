@@ -40,15 +40,13 @@ struct Obs_gauge {
     int current_weak_left_gauge;
     int current_weak_right_gauge;
     int current_strong_gauge;
-    //int current_weak_gauge, current_strong_gauge;
-    //int before_weak_gauge,before_strong_gauge;
     Obs_gauge() : current_weak_center_gauge(gauge_init_val), current_weak_left_gauge(gauge_init_val),
                   current_weak_right_gauge(gauge_init_val), current_strong_gauge(gauge_init_val) {}
-    //Obs_gauge() : current_weak_gauge(gauge_init_val), current_strong_gauge(gauge_init_val) {}
-    //before_weak_gauge(gauge_init_val),before_strong_gauge(gauge_init_val)
+
 };
 
 
-int Isnear(float *raw_data, float threshold_you_want);
+int Isnear(float *raw_data);
 void trace_gauge(Obs_gauge *tracked_gauge);
-void gauge_control(float *raw_data,Obs_gauge *stair_gauge,float threshold_you_want);
+void gauge_control(float *raw_data,Obs_gauge *stair_gauge);
+int get_state(Obs_gauge *obs_gauge);

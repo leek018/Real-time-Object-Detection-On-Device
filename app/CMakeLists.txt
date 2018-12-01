@@ -16,8 +16,6 @@ include_directories(${INCLUDE_PATH})
 # Gradle automatically packages shared libraries with your APK.
 add_library(obs-lib SHARED src/main/cpp/Obs_util.cpp)
 
-
-
 add_library(mssd-lib SHARED IMPORTED)
 set_target_properties(mssd-lib PROPERTIES IMPORTED_LOCATION ${PROJECT_PATH}/app/src/main/JniLibs/arm64-v8a/libMSSD.so)
 

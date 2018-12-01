@@ -7,8 +7,8 @@
 
 //raw_data->[class_index,score(probabilty),x0,y0,x1,y1]
 // threshold_you_want : if object's score surpassed threshold, I will think object is detected correctly
-int Isnear(float *raw_data, float threshold_you_want ) {
-    if(raw_data[SCORE] < threshold_you_want )
+int Isnear(float *raw_data ) {
+    if( raw_data == nullptr )
         return nothing_or_detect_low_probability;
 
     float obj_right = raw_data[X1];
@@ -54,7 +54,7 @@ void trace_gauge(Obs_gauge *stair_gauge)
     stair_gauge->before_strong_gauge = stair_gauge->current_strong_gauge;
 }
  */
-void gauge_control(float *raw_data,Obs_gauge *stair_gauge,float threshold_you_want) {
+void gauge_control(float *raw_data,Obs_gauge *stair_gauge) {
     int case_;
     int current_weak_center_temp = stair_gauge->current_weak_center_gauge;
     int current_weak_left_temp = stair_gauge->current_weak_left_gauge;
@@ -63,8 +63,7 @@ void gauge_control(float *raw_data,Obs_gauge *stair_gauge,float threshold_you_wa
     //int current_weak_temp = stair_gauge->current_weak_gauge;
 
     int current_strong_temp = stair_gauge->current_strong_gauge;
-
-    case_ = Isnear(raw_data,threshold_you_want);
+    case_ = Isnear(raw_data);
     if (case_ == weak_center_case) {
         stair_gauge->current_weak_center_gauge = (current_weak_center_temp < gauge_length) ? ++current_weak_center_temp : gauge_length;
         stair_gauge->current_weak_left_gauge = (current_weak_left_temp > gauge_init_val) ? --current_weak_left_temp : gauge_init_val;
