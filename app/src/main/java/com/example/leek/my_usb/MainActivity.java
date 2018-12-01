@@ -83,8 +83,11 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
     String proto_path = model_path = "/sdcard/saved_images/";
     String device_type = "acl_opencl";
 
+    AlertThread alertThread;
+
     //temp
     int i = 0;
+    int j = 0;
 
     static {
         System.loadLibrary("detect-lib");
@@ -210,8 +213,18 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
 
                 // Release
                 DetectManager.delete_out_data();
+
+                j++;
+                Log.d("hyonzin", ""+j);
+                if (j > 100) {
+                    j = 0;
+                    alertThread.setState(AlertThread.State.WARNING);
+                }
             }
         });
+
+//        alertThread = new AlertThread(this);
+//        alertThread.start();
 
 //        tts_thread = new Thread(new Runnable() {
 //            int case_;
