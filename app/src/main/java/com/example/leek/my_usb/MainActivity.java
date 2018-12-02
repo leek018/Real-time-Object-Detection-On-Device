@@ -74,8 +74,8 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
     private static Bitmap bitmap;
     private static Paint  paint;
     private static Canvas canvas;
-    private int p_width = 1920;
-    private int p_height = 1000;
+    private int p_width = 2076;
+    private int p_height = 1080;
 
 
     String model_name = "mssd_300";
@@ -89,12 +89,14 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
     int i = 0;
     int j = 0;
 
+    static long start, end;
+    static long e2e_start, e2e_end;
+    static long timer[] = new long[10];
+
+
     static {
         System.loadLibrary("detect-lib");
     }
-
-
-
 
 
     private UVCCameraHelper.OnMyDevConnectListener listener = new UVCCameraHelper.OnMyDevConnectListener() {
@@ -201,41 +203,82 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
             @Override
             public void onPreviewResult(byte[] nv21Yuv) {
 
+
+                start = System.currentTimeMillis();
                 // Detect BBox
                 boolean result = DetectManager.detect(nv21Yuv,1920,1080);
+
                 if( result == false)
                     Log.i("error"," in obstacle");
                 float[] dum = new float[1000];
                  DetectManager.get_out_data(dum);
                 Log.i("num",""+dum[0]);
 
-                int x1 = 100, y1 = 100, x2 = 400, y2 = 400;
+                end = System.currentTimeMillis();
+                timer[1] = end - start;  // Detect
+                Log.i(" > Detect",  ""+timer[1]);
 
+                float x1, y1, x2, y2;
+
+                start = System.currentTimeMillis();
                 // Draw BBox
+
                 canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 				for (int i=0; i<(int)dum[0]; i++) {
 					// class, state, x1, y1, x2, y2
-					x1 = dum[1 + i*6 + 2];
-					y1 = dum[1 + i*6 + 3];
-					x2 = dum[1 + i*6 + 4];
-					y2 = dum[1 + i*6 + 5];
-					canvas.drawRect(x1, y1, x2, y2, paint);
+					x1 = dum[1 + i*6 + 2] * p_width;
+					y1 = dum[1 + i*6 + 3] * p_height;
+					x2 = dum[1 + i*6 + 4] * p_width;
+					y2 = dum[1 + i*6 + 5] * p_height;
+//					canvas.drawRect(x1, y1, x2, y2, paint);
+                    canvas.drawRoundRect(x1, y1, x2, y2, 15, 15, paint);
+
+//					if (dum[1 + i*6 + 0] == 20) { //15:person, 20:tvmonitor
+//                    Log.i(""+dum[1 + i*6], "x1:"+x1+" y1:"+y1+" x2:"+x2+" y2:"+y2);
+//                    Log.i(""+dum[1 + i*6], "x1:"+dum[1 + i*6 + 2]+" y1:"+dum[1 + i*6 + 3]+" x2:"+dum[1 + i*6 + 4]+" y2:"+dum[1 + i*6 + 5]);
+//                  }
 				}
 
+				if ((int)dum[0] == 0) {
+                    alertThread.setState(AlertThread.State.NORMAL);
+                } else if ((int)dum[0] < 3) {
+                    alertThread.setState(AlertThread.State.WARNING);
+                } else {
+                    alertThread.setState(AlertThread.State.DANGEROUS);
+                }
+
+                end = System.currentTimeMillis();
+                timer[2] = end - start;  // Draw
+                Log.i(" > Draw",    ""+timer[2]);
+
+                start = System.currentTimeMillis();
                 // Release
                 DetectManager.delete_out_data();
+                end = System.currentTimeMillis();
+                timer[3] = end - start;  // Release
+                Log.i(" > Release", ""+timer[3]);
 
-                j++;
-                Log.d("hyonzin", ""+j);
-                if (j > 100) {
-                    j = 0;
-                    alertThread.setState(AlertThread.State.WARNING);
-                }
+                e2e_end = System.currentTimeMillis();
+                timer[0] = e2e_end - e2e_start;  // End-to-End
+
+                Log.i("End-to-End", ""+timer[0]);
+
+                e2e_start = System.currentTimeMillis();
+
+                /*
+                2018-12-03 01:59:55.715 13160-13652/com.example.leek.my_usb I/ >> convert,resize: 12.087
+                2018-12-03 01:59:55.715 13160-13652/com.example.leek.my_usb I/ >> normalize: 6.456
+                2018-12-03 01:59:55.715 13160-13652/com.example.leek.my_usb I/ >> inference: 81.094
+                2018-12-03 01:59:55.715 13160-13652/com.example.leek.my_usb I/ > Detect: 100
+                2018-12-03 01:59:55.717 13160-13652/com.example.leek.my_usb I/ > Draw: 2
+                2018-12-03 01:59:55.718 13160-13652/com.example.leek.my_usb I/ > Release: 0
+                2018-12-03 01:59:55.718 13160-13652/com.example.leek.my_usb I/End-to-End: 115
+                 */
             }
         });
 
-//        alertThread = new AlertThread(this);
-//        alertThread.start();
+        alertThread = new AlertThread(this);
+        alertThread.start();
 
 //        tts_thread = new Thread(new Runnable() {
 //            int case_;

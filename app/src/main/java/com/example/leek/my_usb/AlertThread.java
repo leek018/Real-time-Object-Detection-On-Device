@@ -2,6 +2,7 @@ package com.example.leek.my_usb;
 
 import android.content.Context;
 import android.os.Vibrator;
+import android.util.Log;
 
 
 public class AlertThread extends Thread {
@@ -28,11 +29,17 @@ public class AlertThread extends Thread {
         while(true) {
             try {
                 if (state == State.WARNING) {
-                    vibrator.vibrate(200);
+                    vibrator.vibrate(150);
                     sleep(400);
                 } else if (state == State.DANGEROUS) {
-                    vibrator.vibrate(500);
-                    sleep(100);
+                    vibrator.vibrate(100);
+                    sleep(30);
+                    vibrator.vibrate(100);
+                    sleep(30);
+                    vibrator.vibrate(100);
+                    sleep(30);
+                    vibrator.vibrate(300);
+                    sleep(30);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
