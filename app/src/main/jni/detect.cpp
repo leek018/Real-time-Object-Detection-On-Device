@@ -156,19 +156,21 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
     }
     for (int i=0;i<num_detected_obj;i++)
     {
-        if( data[0] != IDX_OF_STAIR )
-        {
-            if( data[1] > threshold) {
-                temp_processed_data[1]=data[0];
-                temp_processed_data[2]=-1;
-                temp_processed_data[3]=data[2]*FIXED_WIDTH;
-                temp_processed_data[4]=data[3]*FIXED_HEIGHT;
-                temp_processed_data[5]=data[4]*FIXED_WIDTH;
-                temp_processed_data[6]=data[5]*FIXED_WIDTH;
+        if( data[1] > threshold) {
+            if( data[0] != IDX_OF_STAIR )
+            {
+
+                temp_processed_data[0]=data[0];
+                temp_processed_data[1]=-1;
+                temp_processed_data[2]=data[2]*FIXED_WIDTH;
+                temp_processed_data[3]=data[3]*FIXED_HEIGHT;
+                temp_processed_data[4]=data[4]*FIXED_WIDTH;
+                temp_processed_data[5]=data[5]*FIXED_WIDTH;
+
             }
-        }
-        else{
-            obs_pointer_buffer[++top] = data;
+            else{
+                obs_pointer_buffer[++top] = data;
+            }
         }
         data+=6;
         temp_processed_data+=6;
@@ -181,12 +183,12 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
     for(int i = 0 ; i<= top ; i++){
         float* loaded_obs_pointer = obs_pointer_buffer[i];
         gauge_control(loaded_obs_pointer,&stair_guage);
-        temp_processed_data[1]=loaded_obs_pointer[0];
-        temp_processed_data[2]=get_state(&stair_guage);
-        temp_processed_data[3]=loaded_obs_pointer[2]*FIXED_WIDTH;
-        temp_processed_data[4]=loaded_obs_pointer[3]*FIXED_HEIGHT;
-        temp_processed_data[5]=loaded_obs_pointer[4]*FIXED_WIDTH;
-        temp_processed_data[6]=loaded_obs_pointer[5]*FIXED_WIDTH;
+        temp_processed_data[0]=loaded_obs_pointer[0];
+        temp_processed_data[1]=get_state(&stair_guage);
+        temp_processed_data[2]=loaded_obs_pointer[2]*FIXED_WIDTH;
+        temp_processed_data[3]=loaded_obs_pointer[3]*FIXED_HEIGHT;
+        temp_processed_data[4]=loaded_obs_pointer[4]*FIXED_WIDTH;
+        temp_processed_data[5]=loaded_obs_pointer[5]*FIXED_WIDTH;
         temp_processed_data+=6;
     }
     env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
