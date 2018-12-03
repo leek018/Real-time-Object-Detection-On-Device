@@ -107,9 +107,9 @@ Java_com_example_leek_my_1usb_DetectManager_detect(JNIEnv *env, jclass type, jby
     gettimeofday(&end, NULL);
     timer[2] = getMillisecond(start, end);  // Inference
 
-    LOGI(" >> convert,resize", "%.3lf", timer[0]); // ~10 ms
-    LOGI(" >> normalize",      "%.3lf", timer[1]); // ~7 ms
-    LOGI(" >> inference",      "%.3lf", timer[2]); // ~80 ms
+    LOGI("night >> convert,resize", "%.3lf", timer[0]); // ~10 ms
+    LOGI("night >> normalize",      "%.3lf", timer[1]); // ~7 ms
+    LOGI("night >> inference",      "%.3lf", timer[2]); // ~80 ms
 
 
     env->ReleaseByteArrayElements(nv21Yuv_, i, 0);
@@ -160,8 +160,8 @@ Java_com_example_leek_my_1usb_DetectManager_get_1graph_1space(JNIEnv *env, jclas
     global_input = (float*)malloc(sizeof(float)*IMG_SIZE);
     if(global_input == NULL)
         return JNI_FALSE;
-    int result = graph_ready(&global_graph,&global_tensor_input,dims,model_name,model_path,proto_path,device_type);
-//    int result = graph_ready(&global_graph,&global_tensor_input,dims,model_name,model_path,proto_path,nullptr);
+//    int result = graph_ready(&global_graph,&global_tensor_input,dims,model_name,model_path,proto_path,device_type);
+    int result = graph_ready(&global_graph,&global_tensor_input,dims,model_name,model_path,proto_path,nullptr);
 
 
     env->ReleaseStringUTFChars(model_name_, model_name);

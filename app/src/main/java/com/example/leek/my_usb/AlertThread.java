@@ -29,17 +29,17 @@ public class AlertThread extends Thread {
         while(true) {
             try {
                 if (state == State.WARNING) {
-                    vibrator.vibrate(150);
-                    sleep(400);
+                    vibrator.vibrate(80);
+                    sleep(500);
                 } else if (state == State.DANGEROUS) {
-                    vibrator.vibrate(100);
-                    sleep(30);
-                    vibrator.vibrate(100);
-                    sleep(30);
-                    vibrator.vibrate(100);
-                    sleep(30);
-                    vibrator.vibrate(300);
-                    sleep(30);
+                    vibrator.vibrate(50);
+                    sleep(10);
+                    vibrator.vibrate(50);
+                    sleep(10);
+                    vibrator.vibrate(50);
+                    sleep(10);
+                    vibrator.vibrate(20);
+                    sleep(10);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();

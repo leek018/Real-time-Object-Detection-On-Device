@@ -12,8 +12,7 @@ void post_process_ssd(const char* image_file,float threshold,float* global_out_d
 int graph_ready(graph_t *global_graph,tensor_t *global_input_tensor, int* glbal_dim, const char *model_name,const char* model_path,const char* proto_file_path,const char* device_type);
 int detect(float* global_input_data,float** global_out_data, graph_t global_graph, tensor_t global_input_tensor, tensor_t *global_out_tensor ,int* num,int img_size);
 void graph_finish(float* global_input_data, graph_t global_graph, tensor_t global_input_tensor, const char* model_name);
-int delete_out_tensor(tensor_t global_out_tensor);
-
+void delete_out_tensor(tensor_t global_out_tensor);
 
 
 
