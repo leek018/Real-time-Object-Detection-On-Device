@@ -169,10 +169,7 @@ Java_com_example_leek_my_1usb_DetectManager_get_1graph_1space(JNIEnv *env, jclas
     env->ReleaseStringUTFChars(proto_path_, proto_path);
     env->ReleaseStringUTFChars(device_type_, device_type);
 
-    if(result == 0 ){
-        return JNI_TRUE;
-    }
-    return JNI_FALSE;
+    return (result == 0)? JNI_TRUE : JNI_FALSE;
 }
 
 
@@ -188,11 +185,6 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
     float* temp_processed_data = &data_of_java[1];
     float* data = out_data;
     data_of_java[0]=num_detected_obj;
-    if( num_detected_obj == 0){
-        gauge_control(NULL,&stair_guage);
-        env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
-        return JNI_FALSE;
-    }
     for (int i=0;i<num_detected_obj;i++)
     {
         if( data[1] > threshold) {
@@ -211,21 +203,19 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
         data+=6;
         temp_processed_data+=6;
     }
-    if(top == -1){
-        gauge_control(nullptr,&stair_guage);
-        env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
-        return JNI_TRUE;
-    }
     for(int i = 0 ; i<= top ; i++){
         float* loaded_obs_pointer = obs_pointer_buffer[i];
         gauge_control(loaded_obs_pointer,&stair_guage);
-        temp_processed_data[0]=loaded_obs_pointer[0];
-        temp_processed_data[1]=get_state(&stair_guage);
-        temp_processed_data[2]=loaded_obs_pointer[2];
-        temp_processed_data[3]=loaded_obs_pointer[3];
-        temp_processed_data[4]=loaded_obs_pointer[4];
-        temp_processed_data[5]=loaded_obs_pointer[5];
+        temp_processed_data[0] = loaded_obs_pointer[0];
+        temp_processed_data[1] = get_state(&stair_guage);
+        temp_processed_data[2] = loaded_obs_pointer[2];
+        temp_processed_data[3] = loaded_obs_pointer[3];
+        temp_processed_data[4] = loaded_obs_pointer[4];
+        temp_processed_data[5] = loaded_obs_pointer[5];
         temp_processed_data+=6;
+    }
+    if(top == -1){
+        gauge_control(nullptr,&stair_guage);
     }
     env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
     return JNI_TRUE;
