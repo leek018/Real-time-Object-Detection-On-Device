@@ -265,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
                 e2e_end = System.currentTimeMillis();
                 timer[0] = e2e_end - e2e_start;  // End-to-End
 
-                Log.i("night End-to-End("+(int)dum[0]+")", ""+timer[0]);
+                Log.i("night End-to-End("+n+")", ""+timer[0]);
 
                 e2e_start = System.currentTimeMillis();
 
