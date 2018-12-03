@@ -6,13 +6,22 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.serenegiant.usb.widget.UVCCameraTextureView
-        android:id="@+id/camera_view"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
+        <com.serenegiant.usb.widget.UVCCameraTextureView
+            android:id="@+id/camera_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-    </com.serenegiant.usb.widget.UVCCameraTextureView>
+        </com.serenegiant.usb.widget.UVCCameraTextureView>
 
+        <ImageView
+            android:id="@+id/image_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="matrix" />
 
+    </FrameLayout>
 
 </android.support.constraint.ConstraintLayout>

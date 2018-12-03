@@ -5,11 +5,17 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.hardware.usb.UsbDevice;
 import android.os.Build;
 import android.os.Environment;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +23,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.Toast;
 import com.jiangdg.usbcamera.UVCCameraHelper;
 import com.jiangdg.usbcamera.utils.FileUtils;
@@ -61,20 +70,33 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
     private boolean isPreview;
     private static final int PERMISSION_REQUEST_CODE = 1;
 
+    private ImageView mImageView;
+    private static Bitmap bitmap;
+    private static Paint  paint;
+    private static Canvas canvas;
+    private int p_width = 2076;
+    private int p_height = 1080;
+
+
     String model_name = "mssd_300";
     String model_path ;
     String proto_path = model_path = "/sdcard/saved_images/";
     String device_type = "acl_opencl";
 
+    AlertThread alertThread;
+
     //temp
     int i = 0;
+    int j = 0;
+
+    static long start, end;
+    static long e2e_start, e2e_end;
+    static long timer[] = new long[10];
+
 
     static {
         System.loadLibrary("detect-lib");
     }
-
-
-
 
 
     private UVCCameraHelper.OnMyDevConnectListener listener = new UVCCameraHelper.OnMyDevConnectListener() {
@@ -134,6 +156,9 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
 //                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.activity_main);
+//        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 
         if (Build.VERSION.SDK_INT >= 23)
@@ -150,6 +175,18 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         if(!create_result )
             showShortMsg("create graph failed");
 
+        // To draw and show BBox
+        mImageView = findViewById(R.id.image_view);
+        bitmap = Bitmap.createBitmap(p_width, p_height, Bitmap.Config.ARGB_8888);
+        mImageView.setImageBitmap(bitmap);
+
+        canvas = new Canvas(bitmap);
+        paint = new Paint();
+        paint.setColor(Color.RED);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(3);
+
+
         // step.1 initialize UVCCameraHelper
         mUVCCameraView = (CameraViewInterface) mTextureView;
         mUVCCameraView = (CameraViewInterface) findViewById(R.id.camera_view);
@@ -162,18 +199,86 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
 
 
         mCameraHelper.setOnPreviewFrameListener(new AbstractUVCCameraHandler.OnPreViewResultListener() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onPreviewResult(byte[] nv21Yuv) {
+
+
+                start = System.currentTimeMillis();
+                // Detect BBox
                 boolean result = DetectManager.detect(nv21Yuv,1920,1080);
+
                 if( result == false)
                     Log.i("error"," in obstacle");
                 float[] dum = new float[1000];
                  DetectManager.get_out_data(dum);
                 Log.i("num",""+dum[0]);
-                DetectManager.delete_out_data();
 
+                end = System.currentTimeMillis();
+                timer[1] = end - start;  // Detect
+                Log.i(" > Detect",  ""+timer[1]);
+
+                float x1, y1, x2, y2;
+
+                start = System.currentTimeMillis();
+                // Draw BBox
+
+                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+				for (int i=0; i<(int)dum[0]; i++) {
+					// class, state, x1, y1, x2, y2
+					x1 = dum[1 + i*6 + 2] * p_width;
+					y1 = dum[1 + i*6 + 3] * p_height;
+					x2 = dum[1 + i*6 + 4] * p_width;
+					y2 = dum[1 + i*6 + 5] * p_height;
+//					canvas.drawRect(x1, y1, x2, y2, paint);
+                    canvas.drawRoundRect(x1, y1, x2, y2, 15, 15, paint);
+
+//					if (dum[1 + i*6 + 0] == 20) { //15:person, 20:tvmonitor
+//                    Log.i(""+dum[1 + i*6], "x1:"+x1+" y1:"+y1+" x2:"+x2+" y2:"+y2);
+//                    Log.i(""+dum[1 + i*6], "x1:"+dum[1 + i*6 + 2]+" y1:"+dum[1 + i*6 + 3]+" x2:"+dum[1 + i*6 + 4]+" y2:"+dum[1 + i*6 + 5]);
+//                  }
+				}
+
+				if ((int)dum[0] == 0) {
+                    alertThread.setState(AlertThread.State.NORMAL);
+                } else if ((int)dum[0] < 3) {
+                    alertThread.setState(AlertThread.State.WARNING);
+                } else {
+                    alertThread.setState(AlertThread.State.DANGEROUS);
+                }
+
+                end = System.currentTimeMillis();
+                timer[2] = end - start;  // Draw
+                Log.i(" > Draw",    ""+timer[2]);
+
+                start = System.currentTimeMillis();
+                // Release
+                DetectManager.delete_out_data();
+                end = System.currentTimeMillis();
+                timer[3] = end - start;  // Release
+                Log.i(" > Release", ""+timer[3]);
+
+                e2e_end = System.currentTimeMillis();
+                timer[0] = e2e_end - e2e_start;  // End-to-End
+
+                Log.i("End-to-End", ""+timer[0]);
+
+                e2e_start = System.currentTimeMillis();
+
+                /*
+                2018-12-03 01:59:55.715 13160-13652/com.example.leek.my_usb I/ >> convert,resize: 12.087
+                2018-12-03 01:59:55.715 13160-13652/com.example.leek.my_usb I/ >> normalize: 6.456
+                2018-12-03 01:59:55.715 13160-13652/com.example.leek.my_usb I/ >> inference: 81.094
+                2018-12-03 01:59:55.715 13160-13652/com.example.leek.my_usb I/ > Detect: 100
+                2018-12-03 01:59:55.717 13160-13652/com.example.leek.my_usb I/ > Draw: 2
+                2018-12-03 01:59:55.718 13160-13652/com.example.leek.my_usb I/ > Release: 0
+                2018-12-03 01:59:55.718 13160-13652/com.example.leek.my_usb I/End-to-End: 115
+                 */
             }
         });
+
+        alertThread = new AlertThread(this);
+        alertThread.start();
 
 //        tts_thread = new Thread(new Runnable() {
 //            int case_;

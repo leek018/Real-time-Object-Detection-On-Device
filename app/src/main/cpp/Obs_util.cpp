@@ -10,11 +10,9 @@
 int Isnear(float *raw_data ) {
     if( raw_data == nullptr )
         return nothing_or_detect_low_probability;
-
     float obj_right = raw_data[X1];
-    float obj_left = raw_data[Y0];
+    float obj_left = raw_data[X0];
     float obj_bottom = raw_data[Y1];
-
 
     //add middle area
     float middle_right = middle_threshold + middle_add_area;
