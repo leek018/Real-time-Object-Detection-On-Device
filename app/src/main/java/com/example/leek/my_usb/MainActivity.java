@@ -212,19 +212,23 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
                     Log.i("error"," in obstacle");
                 float[] dum = new float[1000];
                  DetectManager.get_out_data(dum);
-                Log.i("num",""+dum[0]);
 
                 end = System.currentTimeMillis();
                 timer[1] = end - start;  // Detect
-                Log.i(" > Detect",  ""+timer[1]);
+                Log.i("night > Detect",  ""+timer[1]);
 
                 float x1, y1, x2, y2;
+                int n = (int)dum[0];
 
                 start = System.currentTimeMillis();
                 // Draw BBox
 
                 canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-				for (int i=0; i<(int)dum[0]; i++) {
+				for (int i=0; i<n; i++) {
+				    if (dum[1 + i*6] == 0) {
+				        n--;
+				        continue;
+                    }
 					// class, state, x1, y1, x2, y2
 					x1 = dum[1 + i*6 + 2] * p_width;
 					y1 = dum[1 + i*6 + 3] * p_height;
@@ -239,9 +243,9 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
 //                  }
 				}
 
-				if ((int)dum[0] == 0) {
+				if (n == 0) {
                     alertThread.setState(AlertThread.State.NORMAL);
-                } else if ((int)dum[0] < 3) {
+                } else if (n < 3) {
                     alertThread.setState(AlertThread.State.WARNING);
                 } else {
                     alertThread.setState(AlertThread.State.DANGEROUS);
@@ -249,19 +253,19 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
 
                 end = System.currentTimeMillis();
                 timer[2] = end - start;  // Draw
-                Log.i(" > Draw",    ""+timer[2]);
+                Log.i("night > Draw",    ""+timer[2]);
 
                 start = System.currentTimeMillis();
                 // Release
                 DetectManager.delete_out_data();
                 end = System.currentTimeMillis();
                 timer[3] = end - start;  // Release
-                Log.i(" > Release", ""+timer[3]);
+                Log.i("night > Release", ""+timer[3]);
 
                 e2e_end = System.currentTimeMillis();
                 timer[0] = e2e_end - e2e_start;  // End-to-End
 
-                Log.i("End-to-End", ""+timer[0]);
+                Log.i("night End-to-End("+(int)dum[0]+")", ""+timer[0]);
 
                 e2e_start = System.currentTimeMillis();
 
