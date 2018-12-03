@@ -207,9 +207,9 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
                 temp_processed_data[4]=data[4];
                 temp_processed_data[5]=data[5];
             }
-        }
-        else{
-            obs_pointer_buffer[++top] = data;
+            else{
+                obs_pointer_buffer[++top] = data;
+            }
         }
         data+=6;
         temp_processed_data+=6;
