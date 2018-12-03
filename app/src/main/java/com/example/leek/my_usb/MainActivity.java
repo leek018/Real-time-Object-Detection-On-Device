@@ -150,10 +150,7 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i("onCreate","1");
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-//                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
-//                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
 
         setContentView(R.layout.activity_main);
 //        requestWindowFeature(Window.FEATURE_NO_TITLE);
