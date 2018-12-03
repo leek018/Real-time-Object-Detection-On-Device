@@ -15,10 +15,8 @@
 #define FIXED_HEIGHT 300
 #define CHANNEL 3
 #define IMG_SIZE FIXED_WIDTH * FIXED_HEIGHT * CHANNEL
-#define LIMIT_OF_OBJ 10
-#define SIZE_OF_INFO 6
 #define IDX_OF_STAIR 21
-#define NUM_OBS 1
+
 //global variable
 
 
@@ -197,15 +195,14 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
     }
     for (int i=0;i<num_detected_obj;i++)
     {
-        if( data[0] != IDX_OF_STAIR )
-        {
-            if( data[1] > threshold) {
-                temp_processed_data[0]=data[0];
-                temp_processed_data[1]=-1;
-                temp_processed_data[2]=data[2];
-                temp_processed_data[3]=data[3];
-                temp_processed_data[4]=data[4];
-                temp_processed_data[5]=data[5];
+        if( data[1] > threshold) {
+            if( data[0] != IDX_OF_STAIR ) {
+                temp_processed_data[0] = data[0];
+                temp_processed_data[1] = -1;
+                temp_processed_data[2] = data[2];
+                temp_processed_data[3] = data[3];
+                temp_processed_data[4] = data[4];
+                temp_processed_data[5] = data[5];
             }
             else{
                 obs_pointer_buffer[++top] = data;

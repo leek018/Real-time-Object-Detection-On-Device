@@ -4,16 +4,7 @@
  *
  */
 
-//struct Box
-//{
-//    float x0;
-//    float y0;
-//    float x1;
-//    float y1;
-//    int class_idx;
-//    float score;
-//
-//};
+
 typedef void* tensor_t;
 typedef void* graph_t;
 // create graph & ready to run graph
