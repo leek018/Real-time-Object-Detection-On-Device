@@ -15,7 +15,8 @@
 #define FIXED_HEIGHT 300
 #define CHANNEL 3
 #define IMG_SIZE FIXED_WIDTH * FIXED_HEIGHT * CHANNEL
-#define IDX_OF_STAIR 21
+#define IDX_OF_STAIR 0
+#define OBS_POINTER_BUFFER_SIZE 100
 
 //global variable
 
@@ -31,7 +32,8 @@ Obs_gauge stair_guage;
 graph_t global_graph= NULL;
 tensor_t global_tensor_input = NULL;
 tensor_t global_tensor_out = NULL;
-int dims[] = {1,3,300,300};
+int dims[] = {1,3,300,300}; // NCHW
+//int dims[] = {1,3,300,300}; // NCHW
 int num_detected_obj = 0;
 
 
@@ -59,7 +61,7 @@ Java_com_example_leek_my_1usb_DetectManager_detect(JNIEnv *env, jclass type, jby
     float* rgb_data = (float*)converted.data;
 
     gettimeofday(&end, NULL);
-    timer[0] = getMillisecond(start, end);  // Preprocessing (convert, resize)
+    timer[0] = getMillisecond(start, end);  // Preprocessing (convert, resize) ( ms)
 
 
     /*
@@ -84,10 +86,10 @@ Java_com_example_leek_my_1usb_DetectManager_detect(JNIEnv *env, jclass type, jby
 //                global_input[c * hw + h * FIXED_WIDTH + w] = 0.007843* (*rgb_data - mean[c]);
 //                rgb_data++;
 //            }
-            // Loop Unrolling (10->7ms)
-            global_input[       h * FIXED_WIDTH + w] = 0.007843* (*(rgb_data  ) - mean[0]);
-            global_input[hw   + h * FIXED_WIDTH + w] = 0.007843* (*(rgb_data+1) - mean[1]);
-            global_input[hw*2 + h * FIXED_WIDTH + w] = 0.007843* (*(rgb_data+2) - mean[2]);
+            // Loop Unrolling
+            global_input[       h * FIXED_WIDTH + w] = 0.007843* (*(rgb_data  ) - 127.5);
+            global_input[hw   + h * FIXED_WIDTH + w] = 0.007843* (*(rgb_data+1) - 127.5);
+            global_input[hw*2 + h * FIXED_WIDTH + w] = 0.007843* (*(rgb_data+2) - 127.5);
             rgb_data+=3;
         }
     }
@@ -107,9 +109,9 @@ Java_com_example_leek_my_1usb_DetectManager_detect(JNIEnv *env, jclass type, jby
     gettimeofday(&end, NULL);
     timer[2] = getMillisecond(start, end);  // Inference
 
-    LOGI("night >> convert,resize", "%.3lf", timer[0]); // ~10 ms
-    LOGI("night >> normalize",      "%.3lf", timer[1]); // ~7 ms
-    LOGI("night >> inference",      "%.3lf", timer[2]); // ~80 ms
+    LOGI("night >> convert,resize", "%.3lf", timer[0]); //  2.64 ms
+    LOGI("night >> normalize",      "%.3lf", timer[1]); //  1.99 ms
+    LOGI("night >> inference",      "%.3lf", timer[2]); // 41.26 ms
 
 
     env->ReleaseByteArrayElements(nv21Yuv_, i, 0);
@@ -150,17 +152,18 @@ Java_com_example_leek_my_1usb_DetectManager_get_1graph_1space(JNIEnv *env, jclas
                                                               jstring model_path_,
                                                               jstring proto_path_,
                                                               jstring device_type_) {
-    const char *model_name = env->GetStringUTFChars(model_name_, 0);
-    const char *model_path = env->GetStringUTFChars(model_path_, 0);
-    const char *proto_path = env->GetStringUTFChars(proto_path_, 0);
+    const char *model_name  = env->GetStringUTFChars(model_name_, 0);
+    const char *model_path  = env->GetStringUTFChars(model_path_, 0);
+    const char *proto_path  = env->GetStringUTFChars(proto_path_, 0);
     const char *device_type = env->GetStringUTFChars(device_type_, 0);
 
 
     // TODO
-    global_input = (float*)malloc(sizeof(float)*IMG_SIZE);
+    global_input = (float*)malloc(sizeof(float) *IMG_SIZE);
     if(global_input == NULL)
         return JNI_FALSE;
-//    int result = graph_ready(&global_graph,&global_tensor_input,dims,model_name,model_path,proto_path,device_type);
+//    int result = graph_ready(&global_graph, &global_tensor_input, dims, model_name, model_path,
+//            proto_path, device_type);
     int result = graph_ready(&global_graph,&global_tensor_input,dims,model_name,model_path,proto_path,nullptr);
 
 
@@ -169,9 +172,9 @@ Java_com_example_leek_my_1usb_DetectManager_get_1graph_1space(JNIEnv *env, jclas
     env->ReleaseStringUTFChars(proto_path_, proto_path);
     env->ReleaseStringUTFChars(device_type_, device_type);
 
-    if(result == 0 ){
+
+    if(result == 0)
         return JNI_TRUE;
-    }
     return JNI_FALSE;
 }
 
@@ -184,18 +187,13 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
     jfloat *data_of_java = env->GetFloatArrayElements(data_of_java_, NULL);
 
     int top = -1;
-    float* obs_pointer_buffer[IDX_OF_STAIR] = {NULL,};
+    float* obs_pointer_buffer[OBS_POINTER_BUFFER_SIZE] = {NULL,};
     float* temp_processed_data = &data_of_java[1];
     float* data = out_data;
     data_of_java[0]=num_detected_obj;
-    if( num_detected_obj == 0){
-        gauge_control(NULL,&stair_guage);
-        env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
-        return JNI_FALSE;
-    }
-    for (int i=0;i<num_detected_obj;i++)
+    for (int i=0; i<num_detected_obj; i++)
     {
-        if( data[1] > threshold) {
+        if( data[1] > threshold ) {
             if( data[0] != IDX_OF_STAIR ) {
                 temp_processed_data[0] = data[0];
                 temp_processed_data[1] = -1;
@@ -203,29 +201,26 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
                 temp_processed_data[3] = data[3];
                 temp_processed_data[4] = data[4];
                 temp_processed_data[5] = data[5];
-            }
-            else{
+            } else {
                 obs_pointer_buffer[++top] = data;
             }
         }
         data+=6;
         temp_processed_data+=6;
     }
-    if(top == -1){
-        gauge_control(nullptr,&stair_guage);
-        env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
-        return JNI_TRUE;
-    }
     for(int i = 0 ; i<= top ; i++){
         float* loaded_obs_pointer = obs_pointer_buffer[i];
         gauge_control(loaded_obs_pointer,&stair_guage);
-        temp_processed_data[0]=loaded_obs_pointer[0];
-        temp_processed_data[1]=get_state(&stair_guage);
-        temp_processed_data[2]=loaded_obs_pointer[2];
-        temp_processed_data[3]=loaded_obs_pointer[3];
-        temp_processed_data[4]=loaded_obs_pointer[4];
-        temp_processed_data[5]=loaded_obs_pointer[5];
+        temp_processed_data[0] = loaded_obs_pointer[0];
+        temp_processed_data[1] = get_state(&stair_guage);
+        temp_processed_data[2] = loaded_obs_pointer[2];
+        temp_processed_data[3] = loaded_obs_pointer[3];
+        temp_processed_data[4] = loaded_obs_pointer[4];
+        temp_processed_data[5] = loaded_obs_pointer[5];
         temp_processed_data+=6;
+    }
+    if(top == -1){
+        gauge_control(nullptr,&stair_guage);
     }
     env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
     return JNI_TRUE;
