@@ -258,13 +258,6 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
 //                  }
 				}
 
-//				if (n == 0) {
-//                    alertThread.setState(AlertThread.State.NORMAL);
-//                } else if (n < 3) {
-//                    alertThread.setState(AlertThread.State.WARNING);
-//                } else {
-//                    alertThread.setState(AlertThread.State.DANGEROUS);
-//                }
 
                 end = System.currentTimeMillis();
                 timer[2] = end - start;  // Draw
@@ -299,44 +292,6 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         alertThread = new AlertThread(this);
         alertThread.start();
 
-//        tts_thread = new Thread(new Runnable() {
-//            int case_;
-//            @Override
-//            public void run() {
-//                Log.i("thread2","I'm in tts_thread");
-//                case_ = ObstacleManager.get_warning();
-//                switch (case_){
-//                    case WEAK_STATE:
-//                        try {
-//                            ttsGreater21(weak_sentence);
-//                            tts_thread.join();
-//                        } catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        }
-//                        break;
-//                    case STRONG_STATE:
-//                        try {
-//                            ttsGreater21(strong_sentence);
-//                            tts_thread.join();
-//                        } catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        }
-//                        break;
-//                    default:
-//                        break;
-//                }
-//                //mMainHandler.sendEmptyMessage(TTS_DONE);
-//            }
-//        });
-//
-//        tts_object = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-//            @Override
-//            public void onInit(int status) {
-//                if(status != TextToSpeech.ERROR) {
-//                    tts_object.setLanguage(Locale.KOREAN);
-//                }
-//            }
-//        });
     }
 
 

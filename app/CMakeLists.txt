@@ -4,7 +4,7 @@
 # Sets the minimum version of CMake required to build the native library.
 
 cmake_minimum_required(VERSION 3.4.1)
-set(PROJECT_PATH /Users/hyeonjin/workspace/android/my_usb_project_zero)
+set(PROJECT_PATH C:/Users/leek/my_usb_project_zero)
 set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 set(INCLUDE_PATH ${PROJECT_PATH}/app/src/main/include)
