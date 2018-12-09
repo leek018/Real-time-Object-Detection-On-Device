@@ -42,7 +42,6 @@ struct Obs_gauge {
     int current_strong_gauge;
     Obs_gauge() : current_weak_center_gauge(gauge_init_val), current_weak_left_gauge(gauge_init_val),
                   current_weak_right_gauge(gauge_init_val), current_strong_gauge(gauge_init_val) {}
-
 };
 
 
