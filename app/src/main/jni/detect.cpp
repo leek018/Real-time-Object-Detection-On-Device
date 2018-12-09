@@ -159,6 +159,51 @@ Java_com_example_leek_my_1usb_DetectManager_get_1graph_1space(JNIEnv *env, jclas
 }
 
 
+//extern "C"
+//JNIEXPORT jboolean JNICALL
+//Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass type,
+//                                                           jfloatArray data_of_java_) {
+//    jfloat *data_of_java = env->GetFloatArrayElements(data_of_java_, NULL);
+//
+//    int top = -1;
+//    float* temp_processed_data = &data_of_java[1];
+//    float* data = out_data;
+//    data_of_java[0]=num_detected_obj;
+//    for (int i=0; i<num_detected_obj; i++)
+//    {
+////        if( data[1] > threshold ) {
+//            temp_processed_data[0] = data[0]; //cls
+//
+//            temp_processed_data[2] = data[2]; //x1
+//            temp_processed_data[3] = data[3]; //y1
+//            temp_processed_data[4] = data[4]; //x2
+//            temp_processed_data[5] = data[5]; //y2
+//
+//            if( (int)data[0] != IDX_OF_STAIR ) {
+//                temp_processed_data[1] = -1; // state
+//            } else {
+//                gauge_control(temp_processed_data,&stair_guage);
+//                temp_processed_data[1] = get_state(&stair_guage);  // state
+//            }
+////        }
+//        data+=6;
+//        temp_processed_data+=6;
+//    }
+//
+//    if(top == -1){
+//        gauge_control(nullptr, &stair_guage);
+//    }
+////    LOGI("gauge","weak_center_gauge %d",stair_guage.current_weak_center_gauge);
+////    LOGI("gauge","weak_left_gauge %d",stair_guage.current_weak_left_gauge);
+////    LOGI("gauge","weak_right_gauge %d",stair_guage.current_weak_right_gauge);
+////    LOGI("gauge","strong_center_gauge %d",stair_guage.current_strong_gauge);
+//    env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
+//    return JNI_TRUE;
+//
+//
+//}
+
+
 
 extern "C"
 JNIEXPORT jboolean JNICALL
@@ -181,12 +226,14 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
                 temp_processed_data[3] = data[3];
                 temp_processed_data[4] = data[4];
                 temp_processed_data[5] = data[5];
+
+                temp_processed_data+=6;
             } else {
                 obs_pointer_buffer[++top] = data;
             }
         }
+        LOGI("joapyo", "%d: %f %f %f %f", (int)data[0], data[2], data[3], data[4], data[5]);
         data+=6;
-        temp_processed_data+=6;
     }
     for(int i = 0 ; i<= top ; i++){
         float* loaded_obs_pointer = obs_pointer_buffer[i];
@@ -209,5 +256,5 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
     env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
     return JNI_TRUE;
 
-    
+
 }

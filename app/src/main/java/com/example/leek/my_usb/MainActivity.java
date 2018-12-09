@@ -224,12 +224,9 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
                 // Draw BBox
 
                 canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-				for (int i=0; i<n; i++) {
-                    if (dum[1 + i * 6] != 0) {
-                        n--;
-                        continue;
-                    }
-                    if ((int)dum[1 + i * 6] == 0) {
+				for (int i=0; i<dum[0]; i++) {
+
+                    if ((int)dum[1 + i * 6] == 1) {
                         int state = (int) dum[1 + i * 6 + 1];
                         if (state == 0) {
                             paint.setColor(Color.WHITE);
@@ -241,21 +238,20 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
                             paint.setColor(Color.RED);
                             alertThread.setState(AlertThread.State.DANGEROUS);
                         }
+
+                        // class, state, x1, y1, x2, y2
+                        x1 = dum[1 + i*6 + 2] * mImageView.getHeight() / cam_height * cam_width;
+                        y1 = dum[1 + i*6 + 3] * mImageView.getHeight();
+                        x2 = dum[1 + i*6 + 4] * mImageView.getHeight() / cam_height * cam_width;
+                        y2 = dum[1 + i*6 + 5] * mImageView.getHeight();
+
+//    					canvas.drawRect(x1, y1, x2, y2, paint);
+                        canvas.drawRoundRect(x1, y1, x2, y2, 15, 15, paint);
+
+                        Log.i("night: stair found", "x1:"+dum[1 + i*6 + 2]+" y1:"+dum[1 + i*6 + 3]+" x2:"+dum[1 + i*6 + 4]+" y2:"+dum[1 + i*6 + 5]);
+
                     }
-					// class, state, x1, y1, x2, y2
-					x1 = dum[1 + i*6 + 2] * mImageView.getWidth();
-					y1 = dum[1 + i*6 + 3] * mImageView.getHeight();
-					x2 = dum[1 + i*6 + 4] * mImageView.getWidth();
-					y2 = dum[1 + i*6 + 5] * mImageView.getHeight();
-//					canvas.drawRect(x1, y1, x2, y2, paint);
-                    canvas.drawRoundRect(x1, y1, x2, y2, 15, 15, paint);
-
-//					if (dum[1 + i*6 + 0] == 20) { //15:person, 20:tvmonitor
-//                    Log.i(""+dum[1 + i*6], "x1:"+x1+" y1:"+y1+" x2:"+x2+" y2:"+y2);
-//                    Log.i(""+dum[1 + i*6], "x1:"+dum[1 + i*6 + 2]+" y1:"+dum[1 + i*6 + 3]+" x2:"+dum[1 + i*6 + 4]+" y2:"+dum[1 + i*6 + 5]);
-//                  }
 				}
-
 
                 end = System.currentTimeMillis();
                 timer[2] = end - start;  // Draw
