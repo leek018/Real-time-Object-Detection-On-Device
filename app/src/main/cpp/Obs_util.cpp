@@ -83,7 +83,7 @@ void gauge_control(float *raw_data,Obs_gauge *stair_gauge) {
         stair_gauge->current_weak_right_gauge = (current_weak_right_temp > gauge_init_val) ? --current_weak_right_temp : gauge_init_val;
         stair_gauge->current_strong_gauge = (current_strong_temp < gauge_length) ? ++current_strong_temp : gauge_length;
     } else {
-        stair_gauge->current_weak_center_gauge = (current_weak_center_temp > gauge_init_val ? --current_weak_center_temp : gauge_init_val;
+        stair_gauge->current_weak_center_gauge = (current_weak_center_temp > gauge_init_val) ? --current_weak_center_temp : gauge_init_val;
         stair_gauge->current_weak_left_gauge = (current_weak_left_temp > gauge_init_val) ? --current_weak_left_temp : gauge_init_val;
         stair_gauge->current_weak_right_gauge = (current_weak_right_temp > gauge_init_val) ? --current_weak_right_temp : gauge_init_val;
         stair_gauge->current_strong_gauge = (current_strong_temp > gauge_init_val) ? --current_strong_temp : gauge_init_val;
