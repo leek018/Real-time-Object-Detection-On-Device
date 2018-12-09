@@ -202,10 +202,10 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
     if(top == -1){
         gauge_control(nullptr,&stair_guage);
     }
-    LOGI("gauge","weak_center_gauge %d",stair_guage.current_weak_center_gauge);
-    LOGI("gauge","weak_left_gauge %d",stair_guage.current_weak_left_gauge);
-    LOGI("gauge","weak_right_gauge %d",stair_guage.current_weak_right_gauge);
-    LOGI("gauge","strong_center_gauge %d",stair_guage.current_strong_gauge);
+//    LOGI("gauge","weak_center_gauge %d",stair_guage.current_weak_center_gauge);
+//    LOGI("gauge","weak_left_gauge %d",stair_guage.current_weak_left_gauge);
+//    LOGI("gauge","weak_right_gauge %d",stair_guage.current_weak_right_gauge);
+//    LOGI("gauge","strong_center_gauge %d",stair_guage.current_strong_gauge);
     env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
     return JNI_TRUE;
 
