@@ -14,6 +14,7 @@ include_directories(${INCLUDE_PATH})
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
+
 add_library(obs-lib SHARED src/main/cpp/Obs_util.cpp)
 
 add_library(mssd-lib SHARED IMPORTED)
