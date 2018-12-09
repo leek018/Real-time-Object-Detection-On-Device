@@ -33,7 +33,6 @@ graph_t global_graph= NULL;
 tensor_t global_tensor_input = NULL;
 tensor_t global_tensor_out = NULL;
 int dims[] = {1,3,300,300}; // NCHW
-//int dims[] = {1,3,300,300}; // NCHW
 int num_detected_obj = 0;
 
 
@@ -56,40 +55,23 @@ Java_com_example_leek_my_1usb_DetectManager_detect(JNIEnv *env, jclass type, jby
     cv::Mat converted(height, width, CV_8UC3);
     cv::cvtColor(yuv, converted, CV_YUV2BGR_NV21);
     cv::resize(converted,converted,cv::Size(FIXED_HEIGHT,FIXED_WIDTH));
-    //cv::imwrite("/sdcard/saved_images/leek.jpg",converted);
     converted.convertTo(converted,CV_32FC3);
     float* rgb_data = (float*)converted.data;
 
     gettimeofday(&end, NULL);
     timer[0] = getMillisecond(start, end);  // Preprocessing (convert, resize) ( ms)
 
-
-    /*
-    cv::Mat img = cv::imread("/sdcard/saved_images/ssd_dog.jpg");
-    if( img.empty())
-        return -1;
-    cv::resize(img,img,cv::Size(FIXED_HEIGHT,FIXED_WIDTH));
-    img.convertTo(img,CV_32FC3);
-    float *rgb_data = (float*)img.data;
-     */
-
     gettimeofday(&start, NULL);
 
     int hw = FIXED_HEIGHT * FIXED_WIDTH;
-    float mean[3] = {127.5,127.5,127.5};
     for (int h = 0; h < FIXED_HEIGHT; h++)
     {
         for (int w = 0; w < FIXED_WIDTH; w++)
         {
-//            for (int c = 0; c < 3; c++)
-//            {
-//                global_input[c * hw + h * FIXED_WIDTH + w] = 0.007843* (*rgb_data - mean[c]);
-//                rgb_data++;
-//            }
             // Loop Unrolling
-            global_input[       h * FIXED_WIDTH + w] = 0.007843* (*(rgb_data  ) - 127.5);
-            global_input[hw   + h * FIXED_WIDTH + w] = 0.007843* (*(rgb_data+1) - 127.5);
-            global_input[hw*2 + h * FIXED_WIDTH + w] = 0.007843* (*(rgb_data+2) - 127.5);
+            global_input[       h * FIXED_WIDTH + w] = 0.007843 * (*(rgb_data  ) - 127.5);
+            global_input[hw   + h * FIXED_WIDTH + w] = 0.007843 * (*(rgb_data+1) - 127.5);
+            global_input[hw*2 + h * FIXED_WIDTH + w] = 0.007843 * (*(rgb_data+2) - 127.5);
             rgb_data+=3;
         }
     }
@@ -104,7 +86,6 @@ Java_com_example_leek_my_1usb_DetectManager_detect(JNIEnv *env, jclass type, jby
     gettimeofday(&start, NULL);
 
     int res = detect(global_input,&out_data,global_graph,global_tensor_input,&global_tensor_out,&num_detected_obj,IMG_SIZE);
-    //post_process_ssd("/sdcard/saved_images/leek.jpg",threshold,out_data,num_detected_obj,"/sdcard/saved_images/leek_processed.jpg");
 
     gettimeofday(&end, NULL);
     timer[2] = getMillisecond(start, end);  // Inference
@@ -162,8 +143,7 @@ Java_com_example_leek_my_1usb_DetectManager_get_1graph_1space(JNIEnv *env, jclas
     global_input = (float*)malloc(sizeof(float) *IMG_SIZE);
     if(global_input == NULL)
         return JNI_FALSE;
-//    int result = graph_ready(&global_graph, &global_tensor_input, dims, model_name, model_path,
-//            proto_path, device_type);
+
     int result = graph_ready(&global_graph,&global_tensor_input,dims,model_name,model_path,proto_path,nullptr);
 
 
