@@ -71,13 +71,16 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
     private static Bitmap bitmap;
     private static Paint  paint;
     private static Canvas canvas;
-    private int p_width = 640;
-    private int p_height = 480;
+    private int p_width = 2076;
+    private int p_height = 1080;
+    private int cam_width = 640;
+    private int cam_height = 480;
 
 
     String model_name = "mssd_300";
-    String model_path ;
-    String proto_path = model_path = "/sdcard/saved_images/";
+    String path_prefix = "/sdcard/saved_images/";
+    String model_path = path_prefix + "MobileNetSSD_deploy.caffemodel";
+    String proto_path = path_prefix + "MobileNetSSD_deploy.prototxt";
     String device_type = "acl_opencl";
 
     AlertThread alertThread;
@@ -166,14 +169,13 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
 
 
 
-        boolean create_result = DetectManager.get_graph_space(model_name,model_path+"MobileNetSSD_deploy.caffemodel",proto_path+"MobileNetSSD_deploy.prototxt",device_type);
+        boolean create_result = DetectManager.get_graph_space(model_name,model_path,proto_path,device_type);
         if(!create_result )
             showShortMsg("create graph failed");
 
         // To draw and show BBox
         mImageView = findViewById(R.id.image_view);
-//        bitmap = Bitmap.createBitmap(p_width, p_height, Bitmap.Config.ARGB_8888);
-        bitmap = Bitmap.createBitmap(2076, 1080, Bitmap.Config.ARGB_8888);
+        bitmap = Bitmap.createBitmap(p_width, p_height, Bitmap.Config.ARGB_8888);
         mImageView.setImageBitmap(bitmap);
 
         canvas = new Canvas(bitmap);
@@ -191,12 +193,8 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         mCameraHelper.setDefaultFrameFormat(UVCCameraHelper.FRAME_FORMAT_MJPEG);
         mCameraHelper.initUSBMonitor(this, mUVCCameraView, listener);
 
-        Log.i("aabb", "height:"+mCameraHelper.getPreviewHeight());
-        Log.i("aabb", "width:"+mCameraHelper.getPreviewWidth());
-
 //        mCameraHelper.updateResolution(300, 300);
-
-
+//        mCameraHelper.updateResolution(p_width, p_height);
 
         mCameraHelper.setOnPreviewFrameListener(new AbstractUVCCameraHandler.OnPreViewResultListener() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -226,12 +224,9 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
                 // Draw BBox
 
                 canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-				for (int i=0; i<n; i++) {
-                    if (dum[1 + i * 6] != 0) {
-                        n--;
-                        continue;
-                    }
-                    if ((int)dum[1 + i * 6] == 0) {
+				for (int i=0; i<dum[0]; i++) {
+
+                    if ((int)dum[1 + i * 6] == 1) {
                         int state = (int) dum[1 + i * 6 + 1];
                         if (state == 0) {
                             paint.setColor(Color.WHITE);
@@ -243,21 +238,20 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
                             paint.setColor(Color.RED);
                             alertThread.setState(AlertThread.State.DANGEROUS);
                         }
+
+                        // class, state, x1, y1, x2, y2
+                        x1 = dum[1 + i*6 + 2] * mImageView.getHeight() / cam_height * cam_width;
+                        y1 = dum[1 + i*6 + 3] * mImageView.getHeight();
+                        x2 = dum[1 + i*6 + 4] * mImageView.getHeight() / cam_height * cam_width;
+                        y2 = dum[1 + i*6 + 5] * mImageView.getHeight();
+
+//    					canvas.drawRect(x1, y1, x2, y2, paint);
+                        canvas.drawRoundRect(x1, y1, x2, y2, 15, 15, paint);
+
+                        Log.i("night: stair found", "x1:"+dum[1 + i*6 + 2]+" y1:"+dum[1 + i*6 + 3]+" x2:"+dum[1 + i*6 + 4]+" y2:"+dum[1 + i*6 + 5]);
+
                     }
-					// class, state, x1, y1, x2, y2
-					x1 = dum[1 + i*6 + 2] * mImageView.getWidth();
-					y1 = dum[1 + i*6 + 3] * mImageView.getHeight();
-					x2 = dum[1 + i*6 + 4] * mImageView.getWidth();
-					y2 = dum[1 + i*6 + 5] * mImageView.getHeight();
-//					canvas.drawRect(x1, y1, x2, y2, paint);
-                    canvas.drawRoundRect(x1, y1, x2, y2, 15, 15, paint);
-
-//					if (dum[1 + i*6 + 0] == 20) { //15:person, 20:tvmonitor
-//                    Log.i(""+dum[1 + i*6], "x1:"+x1+" y1:"+y1+" x2:"+x2+" y2:"+y2);
-//                    Log.i(""+dum[1 + i*6], "x1:"+dum[1 + i*6 + 2]+" y1:"+dum[1 + i*6 + 3]+" x2:"+dum[1 + i*6 + 4]+" y2:"+dum[1 + i*6 + 5]);
-//                  }
 				}
-
 
                 end = System.currentTimeMillis();
                 timer[2] = end - start;  // Draw

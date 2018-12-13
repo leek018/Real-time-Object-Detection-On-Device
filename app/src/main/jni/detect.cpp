@@ -33,7 +33,6 @@ graph_t global_graph= NULL;
 tensor_t global_tensor_input = NULL;
 tensor_t global_tensor_out = NULL;
 int dims[] = {1,3,300,300}; // NCHW
-//int dims[] = {1,3,300,300}; // NCHW
 int num_detected_obj = 0;
 
 
@@ -56,40 +55,23 @@ Java_com_example_leek_my_1usb_DetectManager_detect(JNIEnv *env, jclass type, jby
     cv::Mat converted(height, width, CV_8UC3);
     cv::cvtColor(yuv, converted, CV_YUV2BGR_NV21);
     cv::resize(converted,converted,cv::Size(FIXED_HEIGHT,FIXED_WIDTH));
-    //cv::imwrite("/sdcard/saved_images/leek.jpg",converted);
     converted.convertTo(converted,CV_32FC3);
     float* rgb_data = (float*)converted.data;
 
     gettimeofday(&end, NULL);
     timer[0] = getMillisecond(start, end);  // Preprocessing (convert, resize) ( ms)
 
-
-    /*
-    cv::Mat img = cv::imread("/sdcard/saved_images/ssd_dog.jpg");
-    if( img.empty())
-        return -1;
-    cv::resize(img,img,cv::Size(FIXED_HEIGHT,FIXED_WIDTH));
-    img.convertTo(img,CV_32FC3);
-    float *rgb_data = (float*)img.data;
-     */
-
     gettimeofday(&start, NULL);
 
     int hw = FIXED_HEIGHT * FIXED_WIDTH;
-    float mean[3] = {127.5,127.5,127.5};
     for (int h = 0; h < FIXED_HEIGHT; h++)
     {
         for (int w = 0; w < FIXED_WIDTH; w++)
         {
-//            for (int c = 0; c < 3; c++)
-//            {
-//                global_input[c * hw + h * FIXED_WIDTH + w] = 0.007843* (*rgb_data - mean[c]);
-//                rgb_data++;
-//            }
             // Loop Unrolling
-            global_input[       h * FIXED_WIDTH + w] = 0.007843* (*(rgb_data  ) - 127.5);
-            global_input[hw   + h * FIXED_WIDTH + w] = 0.007843* (*(rgb_data+1) - 127.5);
-            global_input[hw*2 + h * FIXED_WIDTH + w] = 0.007843* (*(rgb_data+2) - 127.5);
+            global_input[       h * FIXED_WIDTH + w] = 0.007843 * (*(rgb_data  ) - 127.5);
+            global_input[hw   + h * FIXED_WIDTH + w] = 0.007843 * (*(rgb_data+1) - 127.5);
+            global_input[hw*2 + h * FIXED_WIDTH + w] = 0.007843 * (*(rgb_data+2) - 127.5);
             rgb_data+=3;
         }
     }
@@ -104,7 +86,6 @@ Java_com_example_leek_my_1usb_DetectManager_detect(JNIEnv *env, jclass type, jby
     gettimeofday(&start, NULL);
 
     int res = detect(global_input,&out_data,global_graph,global_tensor_input,&global_tensor_out,&num_detected_obj,IMG_SIZE);
-    //post_process_ssd("/sdcard/saved_images/leek.jpg",threshold,out_data,num_detected_obj,"/sdcard/saved_images/leek_processed.jpg");
 
     gettimeofday(&end, NULL);
     timer[2] = getMillisecond(start, end);  // Inference
@@ -162,8 +143,7 @@ Java_com_example_leek_my_1usb_DetectManager_get_1graph_1space(JNIEnv *env, jclas
     global_input = (float*)malloc(sizeof(float) *IMG_SIZE);
     if(global_input == NULL)
         return JNI_FALSE;
-//    int result = graph_ready(&global_graph, &global_tensor_input, dims, model_name, model_path,
-//            proto_path, device_type);
+
     int result = graph_ready(&global_graph,&global_tensor_input,dims,model_name,model_path,proto_path,nullptr);
 
 
@@ -177,6 +157,51 @@ Java_com_example_leek_my_1usb_DetectManager_get_1graph_1space(JNIEnv *env, jclas
         return JNI_TRUE;
     return JNI_FALSE;
 }
+
+
+//extern "C"
+//JNIEXPORT jboolean JNICALL
+//Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass type,
+//                                                           jfloatArray data_of_java_) {
+//    jfloat *data_of_java = env->GetFloatArrayElements(data_of_java_, NULL);
+//
+//    int top = -1;
+//    float* temp_processed_data = &data_of_java[1];
+//    float* data = out_data;
+//    data_of_java[0]=num_detected_obj;
+//    for (int i=0; i<num_detected_obj; i++)
+//    {
+////        if( data[1] > threshold ) {
+//            temp_processed_data[0] = data[0]; //cls
+//
+//            temp_processed_data[2] = data[2]; //x1
+//            temp_processed_data[3] = data[3]; //y1
+//            temp_processed_data[4] = data[4]; //x2
+//            temp_processed_data[5] = data[5]; //y2
+//
+//            if( (int)data[0] != IDX_OF_STAIR ) {
+//                temp_processed_data[1] = -1; // state
+//            } else {
+//                gauge_control(temp_processed_data,&stair_guage);
+//                temp_processed_data[1] = get_state(&stair_guage);  // state
+//            }
+////        }
+//        data+=6;
+//        temp_processed_data+=6;
+//    }
+//
+//    if(top == -1){
+//        gauge_control(nullptr, &stair_guage);
+//    }
+////    LOGI("gauge","weak_center_gauge %d",stair_guage.current_weak_center_gauge);
+////    LOGI("gauge","weak_left_gauge %d",stair_guage.current_weak_left_gauge);
+////    LOGI("gauge","weak_right_gauge %d",stair_guage.current_weak_right_gauge);
+////    LOGI("gauge","strong_center_gauge %d",stair_guage.current_strong_gauge);
+//    env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
+//    return JNI_TRUE;
+//
+//
+//}
 
 
 
@@ -201,12 +226,14 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
                 temp_processed_data[3] = data[3];
                 temp_processed_data[4] = data[4];
                 temp_processed_data[5] = data[5];
+
+                temp_processed_data+=6;
             } else {
                 obs_pointer_buffer[++top] = data;
             }
         }
+        LOGI("joapyo", "%d: %f %f %f %f", (int)data[0], data[2], data[3], data[4], data[5]);
         data+=6;
-        temp_processed_data+=6;
     }
     for(int i = 0 ; i<= top ; i++){
         float* loaded_obs_pointer = obs_pointer_buffer[i];
@@ -222,12 +249,12 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
     if(top == -1){
         gauge_control(nullptr,&stair_guage);
     }
-    LOGI("gauge","weak_center_gauge %d",stair_guage.current_weak_center_gauge);
-    LOGI("gauge","weak_left_gauge %d",stair_guage.current_weak_left_gauge);
-    LOGI("gauge","weak_right_gauge %d",stair_guage.current_weak_right_gauge);
-    LOGI("gauge","strong_center_gauge %d",stair_guage.current_strong_gauge);
+//    LOGI("gauge","weak_center_gauge %d",stair_guage.current_weak_center_gauge);
+//    LOGI("gauge","weak_left_gauge %d",stair_guage.current_weak_left_gauge);
+//    LOGI("gauge","weak_right_gauge %d",stair_guage.current_weak_right_gauge);
+//    LOGI("gauge","strong_center_gauge %d",stair_guage.current_strong_gauge);
     env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
     return JNI_TRUE;
 
-    
+
 }
