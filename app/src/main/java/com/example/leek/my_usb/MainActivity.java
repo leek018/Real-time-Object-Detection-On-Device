@@ -13,7 +13,9 @@ import android.graphics.PorterDuff;
 import android.hardware.usb.UsbDevice;
 import android.os.Build;
 import android.os.Environment;
-import android.speech.tts.TextToSpeech;
+
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
@@ -25,6 +27,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+//import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 import com.jiangdg.usbcamera.UVCCameraHelper;
@@ -41,24 +44,7 @@ import java.io.OutputStream;
 public class MainActivity extends AppCompatActivity implements CameraViewInterface.Callback {
     private static final String TAG = "Debug";
 
-    /*
-    private Thread tts_thread;
-    private boolean tts_thread_started = false;
-    private boolean feed_bbox_thread_statred = false;
-    private boolean program_running = true;
 
-    final int READY_TO_FEED = 0;
-    final int SERVICE_CALL_DONE = 1;
-    final int TTS_DONE = 2;
-    final int WEAK_STATE = 0;
-    final int STRONG_STATE = 1;
-    final int NORMAL_STATE = 2;
-    final int READY_STATE = 3;
-
-    private TextToSpeech tts_object;
-    public static String weak_sentence  = "계단이 앞쪽에 있습니다";
-    public static String strong_sentence = "계단이 진행방향 바로 앞쪽에 있습니다";
-    */
 
     public View mTextureView;
     private UVCCameraHelper mCameraHelper;
@@ -84,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
     String device_type = "acl_opencl";
 
     AlertThread alertThread;
+
+    //EditText edit;
 
     //temp
     int i = 0;
@@ -144,7 +132,17 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         }
 
     };
+    /*
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
 
+            edit.setText(edit.getText()+String.valueOf(msg.what));
+
+        }
+    };
+    */
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -157,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-
+        //edit = findViewById(R.id.edit);
 
         if (Build.VERSION.SDK_INT >= 23)
         {
@@ -225,20 +223,46 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
 
                 canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 				for (int i=0; i<dum[0]; i++) {
-
+                    /*
                     if ((int)dum[1 + i * 6] == 1) {
                         int state = (int) dum[1 + i * 6 + 1];
                         if (state == 0) {
                             paint.setColor(Color.WHITE);
                             alertThread.setState(AlertThread.State.NORMAL);
-                        } else if (state == 1 || state == 2) {
+                        } else if (state == 1 || state == 2 || state == 3) {
                             paint.setColor(Color.YELLOW);
                             alertThread.setState(AlertThread.State.WARNING);
                         } else {
                             paint.setColor(Color.RED);
                             alertThread.setState(AlertThread.State.DANGEROUS);
                         }
+                     */
+                    //leek revised for tts
+                    if ((int)dum[1 + i * 6] == 1) {
+                        int state = (int) dum[1 + i * 6 + 1];
 
+                        //handler.sendEmptyMessage(state);
+
+                        if (state == 0) {
+                            paint.setColor(Color.WHITE);
+                            alertThread.setState(AlertThread.TTS_STATE.NORMAL);
+                        } else if (state == 1 ) {
+                            paint.setColor(Color.YELLOW);
+                            alertThread.setState(AlertThread.TTS_STATE.WARNING_CENTER);
+
+                        }else if (state == 2 ) {
+                            paint.setColor(Color.YELLOW);
+                            alertThread.setState(AlertThread.TTS_STATE.WARNING_LEFT);
+
+                        }else if (state == 3) {
+                            paint.setColor(Color.YELLOW);
+                            alertThread.setState(AlertThread.TTS_STATE.WARNING_RIGHT);
+
+                        } else {
+                            paint.setColor(Color.RED);
+                            alertThread.setState(AlertThread.TTS_STATE.DANGEROUS);
+
+                        }
                         // class, state, x1, y1, x2, y2
                         x1 = dum[1 + i*6 + 2] * mImageView.getHeight() / cam_height * cam_width;
                         y1 = dum[1 + i*6 + 3] * mImageView.getHeight();
@@ -323,6 +347,10 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         }
         DetectManager.delete_out_data();
         DetectManager.delete_graph_space();
+        if(alertThread.tts_obj != null){
+            alertThread.tts_obj.stop();
+            alertThread.tts_obj.shutdown();
+        }
     }
 
     private void showShortMsg(String msg) {
