@@ -6,6 +6,6 @@ public class DetectManager {
     public static native boolean delete_graph_space();
     public static native boolean detect(byte[] nv21Yuv,int width,int height);
     public static native boolean get_out_data(float[] data_of_java);
-
+    public static native float set_thresh(float threshold);
 
 }

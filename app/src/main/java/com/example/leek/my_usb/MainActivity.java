@@ -28,6 +28,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 //import android.widget.EditText;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 import com.jiangdg.usbcamera.UVCCameraHelper;
@@ -191,7 +193,16 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
         mCameraHelper = UVCCameraHelper.getInstance();
         mCameraHelper.setDefaultFrameFormat(UVCCameraHelper.FRAME_FORMAT_MJPEG);
         mCameraHelper.initUSBMonitor(this, mUVCCameraView, listener);
+        final EditText editText = (EditText)findViewById(R.id.thresh_text);
+        Button btn = (Button)findViewById(R.id.btn);
 
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                float tmp = DetectManager.set_thresh(Float.parseFloat(editText.getText().toString()));
+                editText.setText("");
+            }
+        });
 //        mCameraHelper.updateResolution(300, 300);
 //        mCameraHelper.updateResolution(p_width, p_height);
 

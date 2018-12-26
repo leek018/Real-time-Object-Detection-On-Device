@@ -51,7 +51,7 @@ Java_com_example_leek_my_1usb_DetectManager_detect(JNIEnv *env, jclass type, jby
                                                    jint width, jint height) {
     num_detected_obj = 0;
     jbyte* const i = env->GetByteArrayElements(nv21Yuv_, NULL);
-
+    LOGI("TH","%f",::threshold);
     /* Preprocessing */
 
     gettimeofday(&start, NULL);
@@ -176,7 +176,7 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
     data_of_java[0]=num_detected_obj;
     for (int i=0; i<num_detected_obj; i++)
     {
-        if( data[1] > threshold ) {
+        if( data[1] > ::threshold ) {
             if( (int)data[0] != class_index::BICYCLE ) {
                 temp_processed_data[0] = data[0];
                 temp_processed_data[1] = -1;
@@ -212,6 +212,15 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
 //    LOGI("gauge","strong_center_gauge %d",stair_guage.current_strong_gauge);
     env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
     return JNI_TRUE;
-
-
 }
+
+extern "C"
+JNIEXPORT jfloat JNICALL
+Java_com_example_leek_my_1usb_DetectManager_set_1thresh(JNIEnv *env, jclass type,jfloat threshold) {
+
+    ::threshold = threshold;
+
+    return ::threshold;
+}
+
+

@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+<android.support.constraint.ConstraintLayout
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
@@ -9,6 +14,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <com.serenegiant.usb.widget.UVCCameraTextureView
             android:id="@+id/camera_view"
             android:layout_width="match_parent"
@@ -21,6 +27,35 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="matrix" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <View android:layout_height="match_parent"
+                android:layout_width="1800px"></View>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <Button
+                    android:id="@+id/btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="확인" />
+
+                <EditText
+                    android:id="@+id/thresh_text"
+                    android:layout_width="240dp"
+                    android:layout_height="50dp"
+                    tools:layout_height="20dp"></EditText>
+            </LinearLayout>
+
+        </LinearLayout>
+    </FrameLayout>
         <!--
         <EditText
             android:id="@+id/edit"
@@ -29,7 +64,16 @@
             android:background="@color/TRANSPARENT"
             android:textColor="@color/WHITE" />
             -->
+</LinearLayout>
+    <!--
+    </android.support.constraint.ConstraintLayout>
+        -->
 
-    </FrameLayout>
+    
 
-</android.support.constraint.ConstraintLayout>
+
+
+
+
+
+
