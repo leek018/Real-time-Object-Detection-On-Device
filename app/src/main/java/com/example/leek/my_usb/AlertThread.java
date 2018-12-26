@@ -73,7 +73,8 @@ public class AlertThread extends Thread {
     TTS_STATE current_state = TTS_STATE.NORMAL;
     TTS_STATE before_state = TTS_STATE.NORMAL;
     TextToSpeech tts_obj;
-    private String[] alert_string = {"계단이 앞에 있습니다","계단이 왼쪽에 있습니다","계단이 오른쪽에 있습니다","계단이 바로 앞에 있습니다"};
+    private String[] stair_alert_string = {"계단이 앞에 있습니다","계단이 왼쪽에 있습니다","계단이 오른쪽에 있습니다","계단이 바로 앞에 있습니다"};
+    private String[] bicycle_alert_string={"자전거가 앞에 있습니다","자전거가 왼쪽에 있습니다","자전거가 오른쪽에 있습니다","자전거가 바로 앞에 있습니다"};
 
     public AlertThread (Context context) {
         this.context = context;
@@ -97,22 +98,22 @@ public class AlertThread extends Thread {
                 if( current_state != before_state ){
                     if (current_state == TTS_STATE.WARNING_CENTER ) {
                         if(!tts_obj.isSpeaking()){
-                            ttsGreater21(alert_string[0]);
+                            ttsGreater21(bicycle_alert_string[0]);
                             before_state = current_state;
                         }
                     } else if (current_state == TTS_STATE.WARNING_LEFT) {
                         if(!tts_obj.isSpeaking()){
-                            ttsGreater21(alert_string[1]);
+                            ttsGreater21(bicycle_alert_string[1]);
                             before_state = current_state;
                         }
                     }else if(current_state == TTS_STATE.WARNING_RIGHT){
                         if(!tts_obj.isSpeaking()){
-                            ttsGreater21(alert_string[2]);
+                            ttsGreater21(bicycle_alert_string[2]);
                             before_state = current_state;
                         }
                     }else if(current_state == TTS_STATE.DANGEROUS){
                         if(!tts_obj.isSpeaking()){
-                            ttsGreater21(alert_string[3]);
+                            ttsGreater21(bicycle_alert_string[3]);
                             before_state = current_state;
                         }
                     }else{

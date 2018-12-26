@@ -15,11 +15,16 @@
 #define FIXED_HEIGHT 300
 #define CHANNEL 3
 #define IMG_SIZE FIXED_WIDTH * FIXED_HEIGHT * CHANNEL
-#define IDX_OF_STAIR 1
+
 #define OBS_POINTER_BUFFER_SIZE 100
 
 //global variable
-
+namespace class_index{
+    enum{
+        STAIR=1,
+        BICYCLE
+    };
+}
 
 #define getMillisecond(start, end) \
 	(end.tv_sec-start.tv_sec)*1000 + \
@@ -38,7 +43,7 @@ int num_detected_obj = 0;
 
 float* out_data = NULL;
 float* global_input = NULL;
-float threshold = 0.5;
+float threshold = 0.8;
 
 extern "C"
 JNIEXPORT jboolean JNICALL
@@ -158,53 +163,6 @@ Java_com_example_leek_my_1usb_DetectManager_get_1graph_1space(JNIEnv *env, jclas
     return JNI_FALSE;
 }
 
-
-//extern "C"
-//JNIEXPORT jboolean JNICALL
-//Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass type,
-//                                                           jfloatArray data_of_java_) {
-//    jfloat *data_of_java = env->GetFloatArrayElements(data_of_java_, NULL);
-//
-//    int top = -1;
-//    float* temp_processed_data = &data_of_java[1];
-//    float* data = out_data;
-//    data_of_java[0]=num_detected_obj;
-//    for (int i=0; i<num_detected_obj; i++)
-//    {
-////        if( data[1] > threshold ) {
-//            temp_processed_data[0] = data[0]; //cls
-//
-//            temp_processed_data[2] = data[2]; //x1
-//            temp_processed_data[3] = data[3]; //y1
-//            temp_processed_data[4] = data[4]; //x2
-//            temp_processed_data[5] = data[5]; //y2
-//
-//            if( (int)data[0] != IDX_OF_STAIR ) {
-//                temp_processed_data[1] = -1; // state
-//            } else {
-//                gauge_control(temp_processed_data,&stair_guage);
-//                temp_processed_data[1] = get_state(&stair_guage);  // state
-//            }
-////        }
-//        data+=6;
-//        temp_processed_data+=6;
-//    }
-//
-//    if(top == -1){
-//        gauge_control(nullptr, &stair_guage);
-//    }
-////    LOGI("gauge","weak_center_gauge %d",stair_guage.current_weak_center_gauge);
-////    LOGI("gauge","weak_left_gauge %d",stair_guage.current_weak_left_gauge);
-////    LOGI("gauge","weak_right_gauge %d",stair_guage.current_weak_right_gauge);
-////    LOGI("gauge","strong_center_gauge %d",stair_guage.current_strong_gauge);
-//    env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
-//    return JNI_TRUE;
-//
-//
-//}
-
-
-
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass type,
@@ -219,14 +177,13 @@ Java_com_example_leek_my_1usb_DetectManager_get_1out_1data(JNIEnv *env, jclass t
     for (int i=0; i<num_detected_obj; i++)
     {
         if( data[1] > threshold ) {
-            if( (int)data[0] != IDX_OF_STAIR ) {
+            if( (int)data[0] != class_index::BICYCLE ) {
                 temp_processed_data[0] = data[0];
                 temp_processed_data[1] = -1;
                 temp_processed_data[2] = data[2];
                 temp_processed_data[3] = data[3];
                 temp_processed_data[4] = data[4];
                 temp_processed_data[5] = data[5];
-
                 temp_processed_data+=6;
             } else {
                 obs_pointer_buffer[++top] = data;

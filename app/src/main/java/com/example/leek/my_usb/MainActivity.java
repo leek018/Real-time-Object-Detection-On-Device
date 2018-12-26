@@ -61,9 +61,12 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
     private int p_height = 1080;
     private int cam_width = 640;
     private int cam_height = 480;
+    private float[] dum = new float[1000];
 
 
     String model_name = "mssd_300";
+    //voc model path
+    //stair model path "/sdcard/saved_images/stair_model"
     String path_prefix = "/sdcard/saved_images/";
     String model_path = path_prefix + "MobileNetSSD_deploy.caffemodel";
     String proto_path = path_prefix + "MobileNetSSD_deploy.prototxt";
@@ -74,12 +77,10 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
     //EditText edit;
 
     //temp
-    int i = 0;
-    int j = 0;
-
     static long start, end;
     static long e2e_start, e2e_end;
     static long timer[] = new long[10];
+    static int OBS_INDEX = 2;// bicycle == 2, stair == 1
 
 
     static {
@@ -208,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
 
                 if( result == false)
                     Log.i("error"," in obstacle");
-                float[] dum = new float[1000];
+
                  DetectManager.get_out_data(dum);
 
                 end = System.currentTimeMillis();
@@ -238,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements CameraViewInterfa
                         }
                      */
                     //leek revised for tts
-                    if ((int)dum[1 + i * 6] == 1) {
+                    if ((int)dum[1 + i * 6] == OBS_INDEX) {
                         int state = (int) dum[1 + i * 6 + 1];
 
                         //handler.sendEmptyMessage(state);
