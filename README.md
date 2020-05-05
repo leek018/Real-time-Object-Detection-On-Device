@@ -7,6 +7,7 @@
   ## Result
 
 + Preview: 
+![night_hawk_4](https://user-images.githubusercontent.com/37829888/81049129-8ef9f180-8ef8-11ea-9b8d-68edf86ef952.jpg)
 + Poster: [Nighthawk_poster.pdf](https://github.com/leek018/Real-time-Object-Detection-On-Device/files/4142225/Nighthawk_poster.pdf)
 + 31ms at android linux , 42ms (NEON-CPU Multi threads) at application 
 + Target device:
